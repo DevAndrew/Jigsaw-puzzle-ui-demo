@@ -1,9 +1,8 @@
 using System;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
-namespace JigsawPrototype.UI.Screens
+namespace JigsawPrototype.Features.Home.Presentation
 {
     public sealed class PuzzleTileView : MonoBehaviour
     {

@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using JigsawPrototype.Features.Home.Catalog;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Serialization;
 
-namespace JigsawPrototype.UI.Screens
+namespace JigsawPrototype.Features.Home.Presentation
 {
     public sealed class HomeScreenView : MonoBehaviour
     {

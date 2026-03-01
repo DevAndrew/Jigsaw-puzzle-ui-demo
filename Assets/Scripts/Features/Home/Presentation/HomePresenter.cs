@@ -4,11 +4,11 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using JigsawPrototype.Core.Services.Currency;
 using JigsawPrototype.Features.Home.Catalog;
-using JigsawPrototype.Features.Puzzle.Preview;
 using JigsawPrototype.Features.Puzzle.Presentation.Dialogs;
+using JigsawPrototype.Features.Puzzle.Preview;
 using UnityEngine;
 
-namespace JigsawPrototype.UI.Screens
+namespace JigsawPrototype.Features.Home.Presentation
 {
     public sealed class HomePresenter
     {

@@ -6,8 +6,8 @@ using JigsawPrototype.Features.Home.Catalog;
 using JigsawPrototype.Features.Puzzle.Preview;
 using JigsawPrototype.Features.Puzzle.Presentation.Dialogs;
 using JigsawPrototype.Features.Puzzle.Presentation.Screens;
+using JigsawPrototype.Features.Home.Presentation;
 using JigsawPrototype.Features.Store.Presentation;
-using JigsawPrototype.UI.Screens;
 using UnityEngine;
 
 namespace JigsawPrototype.App
