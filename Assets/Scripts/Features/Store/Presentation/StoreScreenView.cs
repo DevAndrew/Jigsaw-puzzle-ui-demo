@@ -7,10 +7,10 @@ namespace JigsawPrototype.Features.Store.Presentation
 {
     public sealed class StoreScreenView : MonoBehaviour
     {
-        [SerializeField] private Button backButton;
-        [SerializeField] private Button buySmallButton;
-        [SerializeField] private Button buyBigButton;
-        [SerializeField] private TMP_Text coinsText;
+        [SerializeField] private Button _backButton;
+        [SerializeField] private Button _buySmallButton;
+        [SerializeField] private Button _buyBigButton;
+        [SerializeField] private TMP_Text _coinsText;
 
         public event Action BackRequested;
         public event Action BuySmallRequested;
@@ -18,21 +18,21 @@ namespace JigsawPrototype.Features.Store.Presentation
 
         private void OnEnable()
         {
-            backButton.onClick.AddListener(OnBack);
-            buySmallButton.onClick.AddListener(OnBuySmall);
-            buyBigButton.onClick.AddListener(OnBuyBig);
+            _backButton.onClick.AddListener(OnBack);
+            _buySmallButton.onClick.AddListener(OnBuySmall);
+            _buyBigButton.onClick.AddListener(OnBuyBig);
         }
 
         private void OnDisable()
         {
-            backButton.onClick.RemoveListener(OnBack);
-            buySmallButton.onClick.RemoveListener(OnBuySmall);
-            buyBigButton.onClick.RemoveListener(OnBuyBig);
+            _backButton.onClick.RemoveListener(OnBack);
+            _buySmallButton.onClick.RemoveListener(OnBuySmall);
+            _buyBigButton.onClick.RemoveListener(OnBuyBig);
         }
 
         public void SetCoins(int coins)
         {
-            coinsText.text = coins.ToString();
+            _coinsText.text = coins.ToString();
         }
 
         private void OnBack() => BackRequested?.Invoke();

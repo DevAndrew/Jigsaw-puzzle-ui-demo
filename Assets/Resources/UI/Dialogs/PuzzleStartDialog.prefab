@@ -708,19 +708,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ec9105a962714b66bef114fa549a51d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  closeButton: {fileID: 3301506509180032560}
-  coinsText: {fileID: 2763193464531513603}
-  previewImage: {fileID: 692929898228137461}
-  pieces36Button: {fileID: 6653248940688467244}
-  pieces64Button: {fileID: 1965082014974967078}
-  pieces100Button: {fileID: 7340475465970046190}
-  startFreeButton: {fileID: 5094145017540065582}
-  startCoinsButton: {fileID: 25663067497239375}
-  startAdButton: {fileID: 4620138835754839649}
-  startCoinsLabel: {fileID: 4254000230021971123}
-  statusText: {fileID: 6374123160788420454}
-  errorText: {fileID: 1358609152355795013}
-  animator: {fileID: 5103251130166224667}
+  _closeButton: {fileID: 3301506509180032560}
+  _coinsText: {fileID: 2763193464531513603}
+  _previewImage: {fileID: 692929898228137461}
+  _pieces36Button: {fileID: 6653248940688467244}
+  _pieces64Button: {fileID: 1965082014974967078}
+  _pieces100Button: {fileID: 7340475465970046190}
+  _startFreeButton: {fileID: 5094145017540065582}
+  _startCoinsButton: {fileID: 25663067497239375}
+  _startAdButton: {fileID: 4620138835754839649}
+  _startCoinsLabel: {fileID: 4254000230021971123}
+  _statusText: {fileID: 6374123160788420454}
+  _errorText: {fileID: 1358609152355795013}
+  _animator: {fileID: 5103251130166224667}
 --- !u!114 &5103251130166224667
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -358,11 +358,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7fa1690357075488faefae3970e79397, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  homeScreen: {fileID: 0}
-  storeScreen: {fileID: 0}
-  puzzleStartedScreen: {fileID: 0}
-  puzzleStartDialog: {fileID: 0}
-  dialogHost: {fileID: 334083662757047095}
+  _screensRoot: {fileID: 6372123213729754372}
+  _dialogsRoot: {fileID: 7023493185786985777}
+  _dialogHost: {fileID: 334083662757047095}
 --- !u!1 &8376919613908124682
 GameObject:
   m_ObjectHideFlags: 0

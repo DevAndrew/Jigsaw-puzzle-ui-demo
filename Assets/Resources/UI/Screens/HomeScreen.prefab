@@ -246,7 +246,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5e698cb5b53ad48c0b9e644b2c94581d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  coinsText: {fileID: 1518013394396684574}
-  gridRoot: {fileID: 8911395364699983197}
-  tilePrefab: {fileID: 4354571495884677559, guid: d37e3b5afa9ab4fc2bd0658f3b854f06, type: 3}
-  tilePlaceholderColor: {r: 1, g: 1, b: 1, a: 0}
+  _coinsText: {fileID: 1518013394396684574}
+  _gridRoot: {fileID: 8911395364699983197}
+  _tilePrefab: {fileID: 4354571495884677559, guid: d37e3b5afa9ab4fc2bd0658f3b854f06, type: 3}
+  _tilePlaceholderColor: {r: 1, g: 1, b: 1, a: 0}

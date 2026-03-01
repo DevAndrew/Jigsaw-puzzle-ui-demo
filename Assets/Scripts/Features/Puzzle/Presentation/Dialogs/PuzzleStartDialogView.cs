@@ -5,6 +5,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
 {
@@ -19,29 +20,29 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
     public sealed class PuzzleStartDialogView : MonoBehaviour, IUIView
     {
         [Header("Header")]
-        [SerializeField] private Button closeButton;
-        [SerializeField] private TMP_Text coinsText;
-
+        [SerializeField] private Button _closeButton;
+        [SerializeField] private TMP_Text _coinsText;
+        
         [Header("Preview")]
-        [SerializeField] private RawImage previewImage;
-
+        [SerializeField] private RawImage _previewImage;
+        
         [Header("Pieces")]
-        [SerializeField] private Button pieces36Button;
-        [SerializeField] private Button pieces64Button;
-        [SerializeField] private Button pieces100Button;
-
+        [SerializeField] private Button _pieces36Button; 
+        [SerializeField] private Button _pieces64Button;
+        [SerializeField] private Button _pieces100Button;
+        
         [Header("CTA")]
-        [SerializeField] private Button startFreeButton;
-        [SerializeField] private Button startCoinsButton;
-        [SerializeField] private Button startAdButton;
-        [SerializeField] private TMP_Text startCoinsLabel;
-
+        [SerializeField] private Button _startFreeButton;
+        [SerializeField] private Button _startCoinsButton;
+        [SerializeField] private Button _startAdButton;
+        [SerializeField] private TMP_Text _startCoinsLabel;
+        
         [Header("Status")]
-        [SerializeField] private TMP_Text statusText;
-        [SerializeField] private TMP_Text errorText;
-
+        [SerializeField] private TMP_Text _statusText;
+        [SerializeField] private TMP_Text _errorText;
+        
         [Header("Animation (optional)")]
-        [SerializeField] private DoTweenDialogAnimator animator;
+        [SerializeField] private DoTweenDialogAnimator _animator;
 
         public event Action CloseRequested;
         public event Action<PiecesPreset> PiecesSelected;
@@ -66,7 +67,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
 
         private void Awake()
         {
-            animator ??= GetComponent<DoTweenDialogAnimator>();
+            _animator ??= GetComponent<DoTweenDialogAnimator>();
 
             _onPieces36 = () => PiecesSelected?.Invoke(PiecesPreset.P36);
             _onPieces64 = () => PiecesSelected?.Invoke(PiecesPreset.P64);
@@ -75,32 +76,32 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             _onStartCoins = () => StartCoinsRequested?.Invoke();
             _onStartAd = () => StartAdRequested?.Invoke();
 
-            if (previewImage != null)
+            if (_previewImage != null)
             {
-                _previewBoundsSize = previewImage.rectTransform.sizeDelta;
+                _previewBoundsSize = _previewImage.rectTransform.sizeDelta;
             }
         }
 
         private void OnEnable()
         {
-            closeButton.onClick.AddListener(OnClose);
-            pieces36Button.onClick.AddListener(_onPieces36);
-            pieces64Button.onClick.AddListener(_onPieces64);
-            pieces100Button.onClick.AddListener(_onPieces100);
-            startFreeButton.onClick.AddListener(_onStartFree);
-            startCoinsButton.onClick.AddListener(_onStartCoins);
-            startAdButton.onClick.AddListener(_onStartAd);
+            _closeButton.onClick.AddListener(OnClose);
+            _pieces36Button.onClick.AddListener(_onPieces36);
+            _pieces64Button.onClick.AddListener(_onPieces64);
+            _pieces100Button.onClick.AddListener(_onPieces100);
+            _startFreeButton.onClick.AddListener(_onStartFree);
+            _startCoinsButton.onClick.AddListener(_onStartCoins);
+            _startAdButton.onClick.AddListener(_onStartAd);
         }
 
         private void OnDisable()
         {
-            closeButton.onClick.RemoveListener(OnClose);
-            pieces36Button.onClick.RemoveListener(_onPieces36);
-            pieces64Button.onClick.RemoveListener(_onPieces64);
-            pieces100Button.onClick.RemoveListener(_onPieces100);
-            startFreeButton.onClick.RemoveListener(_onStartFree);
-            startCoinsButton.onClick.RemoveListener(_onStartCoins);
-            startAdButton.onClick.RemoveListener(_onStartAd);
+            _closeButton.onClick.RemoveListener(OnClose);
+            _pieces36Button.onClick.RemoveListener(_onPieces36);
+            _pieces64Button.onClick.RemoveListener(_onPieces64);
+            _pieces100Button.onClick.RemoveListener(_onPieces100);
+            _startFreeButton.onClick.RemoveListener(_onStartFree);
+            _startCoinsButton.onClick.RemoveListener(_onStartCoins);
+            _startAdButton.onClick.RemoveListener(_onStartAd);
         }
 
         public void Show()
@@ -119,9 +120,9 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
 
-            if (animator != null)
+            if (_animator != null)
             {
-                await animator.PlayShowAsync();
+                await _animator.PlayShowAsync();
             }
 
             Shown?.Invoke();
@@ -135,9 +136,9 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
                 return;
             }
 
-            if (animator != null)
+            if (_animator != null)
             {
-                await animator.PlayHideAsync();
+                await _animator.PlayHideAsync();
             }
 
             gameObject.SetActive(false);
@@ -146,67 +147,67 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
 
         public void SetCoins(int coins)
         {
-            coinsText.text = coins.ToString();
+            _coinsText.text = coins.ToString();
         }
 
         public void SetPreview(Texture2D texture)
         {
-            if (previewImage == null) return;
+            if (_previewImage == null) return;
 
-            previewImage.texture = texture;
-            previewImage.color = Color.white;
+            _previewImage.texture = texture;
+            _previewImage.color = Color.white;
             FitPreviewToBounds(texture);
         }
 
         public void SetPreviewLoading()
         {
-            if (previewImage == null) return;
+            if (_previewImage == null) return;
 
-            var rt = previewImage.rectTransform;
+            var rt = _previewImage.rectTransform;
             if (_previewBoundsSize.x <= 0f || _previewBoundsSize.y <= 0f)
             {
                 _previewBoundsSize = rt.sizeDelta;
             }
 
             rt.sizeDelta = _previewBoundsSize;
-            previewImage.texture = null;
-            previewImage.color = new Color(1f, 1f, 1f, 0f);
+            _previewImage.texture = null;
+            _previewImage.color = new Color(1f, 1f, 1f, 0f);
         }
 
         public void SetPiecesSelected(PiecesPreset preset)
         {
-            SetSelected(pieces36Button, preset == PiecesPreset.P36);
-            SetSelected(pieces64Button, preset == PiecesPreset.P64);
-            SetSelected(pieces100Button, preset == PiecesPreset.P100);
+            SetSelected(_pieces36Button, preset == PiecesPreset.P36);
+            SetSelected(_pieces64Button, preset == PiecesPreset.P64);
+            SetSelected(_pieces100Button, preset == PiecesPreset.P100);
         }
 
         public void SetCoinsCost(int cost)
         {
-            if (startCoinsLabel != null)
+            if (_startCoinsLabel != null)
             {
-                startCoinsLabel.text = cost.ToString();
+                _startCoinsLabel.text = cost.ToString();
             }
         }
 
         public void SetInteractable(bool value)
         {
-            pieces36Button.interactable = value;
-            pieces64Button.interactable = value;
-            pieces100Button.interactable = value;
-            startFreeButton.interactable = value;
-            startCoinsButton.interactable = value;
-            startAdButton.interactable = value;
-            closeButton.interactable = value;
+            _pieces36Button.interactable = value;
+            _pieces64Button.interactable = value;
+            _pieces100Button.interactable = value;
+            _startFreeButton.interactable = value;
+            _startCoinsButton.interactable = value;
+            _startAdButton.interactable = value;
+            _closeButton.interactable = value;
         }
 
         public void SetStatus(string text)
         {
-            statusText.text = text ?? "";
+            _statusText.text = text ?? "";
         }
 
         public void SetError(string text)
         {
-            errorText.text = text ?? "";
+            _errorText.text = text ?? "";
         }
 
         private static void SetSelected(Selectable selectable, bool selected)
@@ -218,9 +219,9 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
 
         private void FitPreviewToBounds(Texture texture)
         {
-            if (previewImage == null) return;
+            if (_previewImage == null) return;
 
-            var rt = previewImage.rectTransform;
+            var rt = _previewImage.rectTransform;
             if (_previewBoundsSize.x <= 0f || _previewBoundsSize.y <= 0f)
             {
                 _previewBoundsSize = rt.sizeDelta;

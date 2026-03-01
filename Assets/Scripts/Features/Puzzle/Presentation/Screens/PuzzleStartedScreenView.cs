@@ -7,24 +7,24 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Screens
 {
     public sealed class PuzzleStartedScreenView : MonoBehaviour
     {
-        [SerializeField] private TMP_Text titleText;
-        [SerializeField] private Button backButton;
+        [SerializeField] private TMP_Text _titleText;
+        [SerializeField] private Button _backButton;
 
         public event Action BackRequested;
 
         private void OnEnable()
         {
-            backButton.onClick.AddListener(OnBack);
+            _backButton.onClick.AddListener(OnBack);
         }
 
         private void OnDisable()
         {
-            backButton.onClick.RemoveListener(OnBack);
+            _backButton.onClick.RemoveListener(OnBack);
         }
 
         public void SetTitle(string text)
         {
-            titleText.text = text ?? "";
+            _titleText.text = text ?? "";
         }
 
         private void OnBack()

@@ -1,49 +1,50 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace JigsawPrototype.UI.Screens
 {
     public sealed class PuzzleTileView : MonoBehaviour
     {
-        [SerializeField] private Button button;
-        [SerializeField] private RawImage previewImage;
-        [SerializeField] private AspectRatioFitter previewAspectFitter;
+        [SerializeField] private Button _button;
+        [SerializeField] private RawImage _previewImage;
+        [SerializeField] private AspectRatioFitter _previewAspectFitter;
 
         private string _puzzleId;
         private Action<string> _onSelected;
 
         private void Awake()
         {
-            if (button == null)
+            if (_button == null)
             {
-                button = GetComponent<Button>();
+                _button = GetComponent<Button>();
             }
 
-            if (previewImage == null)
+            if (_previewImage == null)
             {
-                previewImage = GetComponentInChildren<RawImage>(includeInactive: true);
+                _previewImage = GetComponentInChildren<RawImage>(includeInactive: true);
             }
 
-            if (previewAspectFitter == null && previewImage != null)
+            if (_previewAspectFitter == null && _previewImage != null)
             {
-                previewAspectFitter = previewImage.GetComponent<AspectRatioFitter>();
+                _previewAspectFitter = _previewImage.GetComponent<AspectRatioFitter>();
             }
         }
 
         private void OnEnable()
         {
-            if (button != null)
+            if (_button != null)
             {
-                button.onClick.AddListener(OnClicked);
+                _button.onClick.AddListener(OnClicked);
             }
         }
 
         private void OnDisable()
         {
-            if (button != null)
+            if (_button != null)
             {
-                button.onClick.RemoveListener(OnClicked);
+                _button.onClick.RemoveListener(OnClicked);
             }
         }
 
@@ -57,22 +58,22 @@ namespace JigsawPrototype.UI.Screens
 
         public void SetPreview(Texture2D texture, Color placeholderColor)
         {
-            if (previewImage == null) return;
+            if (_previewImage == null) return;
 
-            previewImage.texture = texture;
-            previewImage.color = texture == null ? placeholderColor : Color.white;
+            _previewImage.texture = texture;
+            _previewImage.color = texture == null ? placeholderColor : Color.white;
 
-            if (previewAspectFitter != null && texture != null && texture.height > 0)
+            if (_previewAspectFitter != null && texture != null && texture.height > 0)
             {
-                previewAspectFitter.aspectRatio = (float)texture.width / texture.height;
+                _previewAspectFitter.aspectRatio = (float)texture.width / texture.height;
             }
         }
 
         public void SetInteractable(bool value)
         {
-            if (button != null)
+            if (_button != null)
             {
-                button.interactable = value;
+                _button.interactable = value;
             }
         }
 

@@ -3,17 +3,20 @@ using System.Collections.Generic;
 using JigsawPrototype.Features.Home.Catalog;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace JigsawPrototype.UI.Screens
 {
     public sealed class HomeScreenView : MonoBehaviour
     {
+
         [Header("Top Bar")]
-        [SerializeField] private TMP_Text coinsText;
+        [SerializeField] private TMP_Text _coinsText;
+
         [Header("Puzzle Tiles")]
-        [SerializeField] private RectTransform gridRoot;
-        [SerializeField] private PuzzleTileView tilePrefab;
-        [SerializeField] private Color tilePlaceholderColor = new Color(1f, 1f, 1f, 0f);
+        [SerializeField] private RectTransform _gridRoot;
+        [SerializeField] private PuzzleTileView _tilePrefab;
+        [SerializeField] private Color _tilePlaceholderColor = new Color(1f, 1f, 1f, 0f);
 
         public event Action<string> PuzzleSelected;
 
@@ -28,12 +31,12 @@ namespace JigsawPrototype.UI.Screens
 
         public void SetCoins(int coins)
         {
-            coinsText.text = coins.ToString();
+            _coinsText.text = coins.ToString();
         }
 
         public void RenderCatalog(IReadOnlyList<PuzzleCatalogItem> items)
         {
-            if (gridRoot == null || tilePrefab == null)
+            if (_gridRoot == null || _tilePrefab == null)
             {
                 Debug.LogError("HomeScreenView: assign GridRoot and TilePrefab in inspector.");
                 return;
@@ -56,7 +59,7 @@ namespace JigsawPrototype.UI.Screens
 
                 var tile = GetOrCreateTile();
                 tile.name = $"PuzzleTile_{puzzleId}";
-                tile.Bind(puzzleId, HandleTileSelected, tilePlaceholderColor);
+                tile.Bind(puzzleId, HandleTileSelected, _tilePlaceholderColor);
                 _activeTiles.Add(tile);
                 _tilesById[puzzleId] = tile;
             }
@@ -69,7 +72,7 @@ namespace JigsawPrototype.UI.Screens
                 return;
             }
 
-            tile.SetPreview(texture, tilePlaceholderColor);
+            tile.SetPreview(texture, _tilePlaceholderColor);
         }
 
         public void SetGridInteractable(bool interactable)
@@ -94,7 +97,7 @@ namespace JigsawPrototype.UI.Screens
                 return pooled;
             }
 
-            return Instantiate(tilePrefab, gridRoot);
+            return Instantiate(_tilePrefab, _gridRoot);
         }
 
         private void ReleaseActiveTiles()
