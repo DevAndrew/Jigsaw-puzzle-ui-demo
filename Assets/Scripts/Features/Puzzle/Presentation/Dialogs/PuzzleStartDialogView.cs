@@ -108,11 +108,6 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             _startAdButton.onClick.RemoveListener(_onStartAd);
         }
 
-        public void Show()
-        {
-            gameObject.SetActive(true);
-        }
-
         public void HideImmediate()
         {
             gameObject.SetActive(false);
