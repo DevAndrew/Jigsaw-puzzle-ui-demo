@@ -18,7 +18,6 @@ namespace JigsawPrototype.App
         public static class Catalog
         {
             public const string DefaultPuzzleId = "demo_1";
-            public const int PreviewCacheCapacity = 64;
         }
     }
 }

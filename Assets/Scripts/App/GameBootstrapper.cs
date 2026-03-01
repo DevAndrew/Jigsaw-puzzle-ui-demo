@@ -27,7 +27,6 @@ namespace JigsawPrototype.App
         private SimulatedAdsService _ads;
         private LocalFilePreviewService _preview;
         private StaticPuzzleCatalogService _catalog;
-        private InMemoryPuzzlePreviewCache _previewCache;
 
         private HomePresenter _homePresenter;
         private PuzzleStartPresenter _puzzleStartPresenter;
@@ -99,7 +98,6 @@ namespace JigsawPrototype.App
                 DefaultPreviewPath = defaultPreviewPath
             });
             _catalog = new StaticPuzzleCatalogService(catalogItems, defaultPuzzleId);
-            _previewCache = new InMemoryPuzzlePreviewCache(capacity: AppConstants.Catalog.PreviewCacheCapacity);
 
             // Views (prefab-authored, instantiated under UiRootShell)
             if (_homeScreenPrefab == null || _storeScreenPrefab == null || _puzzleStartedScreenPrefab == null || _puzzleStartDialogPrefab == null)
@@ -143,7 +141,7 @@ namespace JigsawPrototype.App
             // Presenters
             _startedPresenter = new PuzzleStartedPresenter(_screens);
             _puzzleStartPresenter = new PuzzleStartPresenter(_currency, _ads, _preview, _screens, puzzleStartDialogView, _startedPresenter, _dialogHost, defaultPuzzleId, defaultPreviewPath);
-            _homePresenter = new HomePresenter(_currency, _catalog, _preview, _previewCache, _puzzleStartPresenter);
+            _homePresenter = new HomePresenter(_currency, _catalog, _preview, _puzzleStartPresenter);
             _storePresenter = new StorePresenter(_currency, _screens, _puzzleStartPresenter);
 
             // Bind views

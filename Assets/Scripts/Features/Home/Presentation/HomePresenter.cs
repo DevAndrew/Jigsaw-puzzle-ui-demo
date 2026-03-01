@@ -15,7 +15,6 @@ namespace JigsawPrototype.Features.Home.Presentation
         private readonly ICurrencyService _currency;
         private readonly IPuzzleCatalogService _catalog;
         private readonly IPuzzlePreviewService _preview;
-        private readonly IPuzzlePreviewCache _previewCache;
         private readonly PuzzleStartPresenter _puzzleStartPresenter;
 
         private HomeScreenView _view;
@@ -29,13 +28,11 @@ namespace JigsawPrototype.Features.Home.Presentation
             ICurrencyService currency,
             IPuzzleCatalogService catalog,
             IPuzzlePreviewService preview,
-            IPuzzlePreviewCache previewCache,
             PuzzleStartPresenter puzzleStartPresenter)
         {
             _currency = currency;
             _catalog = catalog;
             _preview = preview;
-            _previewCache = previewCache;
             _puzzleStartPresenter = puzzleStartPresenter;
         }
 
@@ -162,14 +159,7 @@ namespace JigsawPrototype.Features.Home.Presentation
                 return PreviewPlaceholderTexture.GetOrCreate();
             }
 
-            var puzzleId = item.Id;
-            if (_previewCache != null && _previewCache.TryGet(puzzleId, out var cached))
-            {
-                return cached;
-            }
-
             var texture = await _preview.GetPreviewAsync(item.PreviewPath, ct);
-            _previewCache?.Put(puzzleId, texture);
             return texture;
         }
 
@@ -242,7 +232,6 @@ namespace JigsawPrototype.Features.Home.Presentation
                 _lifetimeCts = null;
             }
 
-            _previewCache?.Clear();
         }
 
     }
