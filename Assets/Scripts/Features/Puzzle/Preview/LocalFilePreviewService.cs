@@ -7,39 +7,23 @@ namespace JigsawPrototype.Features.Puzzle.Preview
 {
     public sealed class LocalFilePreviewService : IPuzzlePreviewService
     {
-        [Serializable]
-        public struct PreviewEntry
-        {
-            public string PuzzleId;
-            public string AssetPath;
-        }
-
         public sealed class Config
         {
-            public PreviewEntry[] Entries;
-            public string DefaultPuzzleId;
+            public string DefaultPreviewPath;
         }
 
-        private readonly PreviewEntry[] _entries;
-        private readonly string _defaultPuzzleId;
+        private readonly string _defaultPreviewPath;
 
         private static Texture2D s_placeholder;
 
         public LocalFilePreviewService(Config config)
         {
-            _entries = config.Entries ?? Array.Empty<PreviewEntry>();
-            _defaultPuzzleId = config.DefaultPuzzleId ?? "";
+            _defaultPreviewPath = config?.DefaultPreviewPath ?? "";
         }
 
-        public async UniTask<Texture2D> GetPreviewAsync(string puzzleId, CancellationToken ct)
+        public async UniTask<Texture2D> GetPreviewAsync(string previewPath, CancellationToken ct)
         {
-            if (_entries.Length == 0)
-            {
-                return GetPlaceholder();
-            }
-
-            var id = string.IsNullOrWhiteSpace(puzzleId) ? _defaultPuzzleId : puzzleId;
-            var assetPath = TryGetAssetPath(id) ?? TryGetAssetPath(_defaultPuzzleId);
+            var assetPath = string.IsNullOrWhiteSpace(previewPath) ? _defaultPreviewPath : previewPath;
             if (string.IsNullOrWhiteSpace(assetPath))
             {
                 return GetPlaceholder();
@@ -87,22 +71,6 @@ namespace JigsawPrototype.Features.Puzzle.Preview
             }
 
             return normalized;
-        }
-
-        private string TryGetAssetPath(string puzzleId)
-        {
-            if (string.IsNullOrWhiteSpace(puzzleId)) return null;
-
-            for (var i = 0; i < _entries.Length; i++)
-            {
-                var e = _entries[i];
-                if (e.PuzzleId == puzzleId)
-                {
-                    return e.AssetPath;
-                }
-            }
-
-            return null;
         }
 
         private static Texture2D GetPlaceholder()

@@ -22,11 +22,13 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
         private readonly PuzzleStartedPresenter _startedPresenter;
         private readonly DialogHost _dialogHost;
         private readonly string _defaultPuzzleId;
+        private readonly string _defaultPreviewPath;
 
         private PiecesPreset _piecesPreset;
         private bool _busy;
         private CancellationTokenSource _cts;
         private string _selectedPuzzleId;
+        private string _selectedPreviewPath;
         private string _prefetchedPuzzleId;
         private Texture2D _prefetchedPreview;
         private string _pendingLoadError;
@@ -39,7 +41,8 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             PuzzleStartDialogView view,
             PuzzleStartedPresenter startedPresenter,
             DialogHost dialogHost,
-            string defaultPuzzleId)
+            string defaultPuzzleId,
+            string defaultPreviewPath)
         {
             _currency = currency;
             _ads = ads;
@@ -49,7 +52,9 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             _startedPresenter = startedPresenter;
             _dialogHost = dialogHost;
             _defaultPuzzleId = defaultPuzzleId ?? "";
+            _defaultPreviewPath = defaultPreviewPath ?? "";
             _selectedPuzzleId = _defaultPuzzleId;
+            _selectedPreviewPath = _defaultPreviewPath;
         }
 
         public void Bind(PuzzleStartDialogView dialog)
@@ -117,6 +122,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
         {
             var args = new PuzzleStartArgs(
                 _selectedPuzzleId,
+                _selectedPreviewPath,
                 _prefetchedPreview,
                 _piecesPreset,
                 _pendingLoadError);
@@ -203,7 +209,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             BeginBusy("Loading preview...");
             try
             {
-                var tex = await _preview.GetPreviewAsync(_selectedPuzzleId, _cts.Token);
+                var tex = await _preview.GetPreviewAsync(_selectedPreviewPath, _cts.Token);
                 _prefetchedPuzzleId = _selectedPuzzleId;
                 _prefetchedPreview = tex;
                 _view.SetPreview(tex);
@@ -303,6 +309,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             if (args == null)
             {
                 _selectedPuzzleId = _defaultPuzzleId;
+                _selectedPreviewPath = _defaultPreviewPath;
                 _prefetchedPuzzleId = _selectedPuzzleId;
                 _prefetchedPreview = null;
                 _pendingLoadError = "";
@@ -310,6 +317,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             }
 
             _selectedPuzzleId = string.IsNullOrWhiteSpace(args.PuzzleId) ? _defaultPuzzleId : args.PuzzleId;
+            _selectedPreviewPath = string.IsNullOrWhiteSpace(args.PreviewPath) ? _defaultPreviewPath : args.PreviewPath;
             _prefetchedPuzzleId = _selectedPuzzleId;
             _prefetchedPreview = args.PrefetchedPreview;
             _pendingLoadError = args.InitialLoadError ?? "";

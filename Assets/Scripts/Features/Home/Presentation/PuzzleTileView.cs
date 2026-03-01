@@ -14,24 +14,6 @@ namespace JigsawPrototype.UI.Screens
         private string _puzzleId;
         private Action<string> _onSelected;
 
-        private void Awake()
-        {
-            if (_button == null)
-            {
-                _button = GetComponent<Button>();
-            }
-
-            if (_previewImage == null)
-            {
-                _previewImage = GetComponentInChildren<RawImage>(includeInactive: true);
-            }
-
-            if (_previewAspectFitter == null && _previewImage != null)
-            {
-                _previewAspectFitter = _previewImage.GetComponent<AspectRatioFitter>();
-            }
-        }
-
         private void OnEnable()
         {
             if (_button != null)

@@ -23,6 +23,7 @@ namespace JigsawPrototype.UI.Screens
         private CancellationTokenSource _selectionCts;
         private int _selectionVersion;
         private IReadOnlyList<PuzzleCatalogItem> _items = Array.Empty<PuzzleCatalogItem>();
+        private readonly Dictionary<string, PuzzleCatalogItem> _itemsById = new(StringComparer.Ordinal);
 
         private static Texture2D s_errorPlaceholder;
 
@@ -45,6 +46,7 @@ namespace JigsawPrototype.UI.Screens
             _view = view;
             _lifetimeCts = new CancellationTokenSource();
             _items = _catalog?.GetItems() ?? Array.Empty<PuzzleCatalogItem>();
+            RebuildItemsIndex();
             _view.SetCoins(_currency.Balance);
             _view.RenderCatalog(_items);
             _view.PuzzleSelected += OnPuzzleSelected;
@@ -71,13 +73,13 @@ namespace JigsawPrototype.UI.Screens
         {
             for (var i = 0; i < _items.Count; i++)
             {
-                var puzzleId = _items[i].Id;
-                if (string.IsNullOrWhiteSpace(puzzleId)) continue;
+                var item = _items[i];
+                if (item == null || string.IsNullOrWhiteSpace(item.Id)) continue;
 
                 try
                 {
-                    var texture = await GetOrLoadPreviewAsync(puzzleId, ct);
-                    _view?.SetTilePreview(puzzleId, texture);
+                    var texture = await GetOrLoadPreviewAsync(item, ct);
+                    _view?.SetTilePreview(item.Id, texture);
                 }
                 catch (OperationCanceledException)
                 {
@@ -96,7 +98,15 @@ namespace JigsawPrototype.UI.Screens
 
             var requestVersion = BeginSelectionRequest();
             var selectionToken = _selectionCts.Token;
-            var selectedPuzzleId = ResolveSelectedPuzzleId(puzzleId);
+            var selectedItem = ResolveSelectedPuzzleItem(puzzleId);
+            if (selectedItem == null)
+            {
+                _view.SetGridInteractable(true);
+                return;
+            }
+
+            var selectedPuzzleId = selectedItem.Id;
+            var selectedPreviewPath = selectedItem.PreviewPath;
 
             _view.SetGridInteractable(false);
 
@@ -104,7 +114,7 @@ namespace JigsawPrototype.UI.Screens
             var loadError = "";
             try
             {
-                texture = await GetOrLoadPreviewAsync(selectedPuzzleId, selectionToken);
+                texture = await GetOrLoadPreviewAsync(selectedItem, selectionToken);
                 _view.SetTilePreview(selectedPuzzleId, texture);
             }
             catch (OperationCanceledException)
@@ -127,6 +137,7 @@ namespace JigsawPrototype.UI.Screens
             {
                 var args = new PuzzleStartArgs(
                     selectedPuzzleId,
+                    selectedPreviewPath,
                     texture ?? GetErrorPlaceholder(),
                     initialLoadError: loadError);
 
@@ -146,31 +157,59 @@ namespace JigsawPrototype.UI.Screens
             _view?.SetCoins(coins);
         }
 
-        private async UniTask<Texture2D> GetOrLoadPreviewAsync(string puzzleId, CancellationToken ct)
+        private async UniTask<Texture2D> GetOrLoadPreviewAsync(PuzzleCatalogItem item, CancellationToken ct)
         {
+            if (item == null || string.IsNullOrWhiteSpace(item.Id))
+            {
+                return GetErrorPlaceholder();
+            }
+
+            var puzzleId = item.Id;
             if (_previewCache != null && _previewCache.TryGet(puzzleId, out var cached))
             {
                 return cached;
             }
 
-            var texture = await _preview.GetPreviewAsync(puzzleId, ct);
+            var texture = await _preview.GetPreviewAsync(item.PreviewPath, ct);
             _previewCache?.Put(puzzleId, texture);
             return texture;
         }
 
-        private string ResolveSelectedPuzzleId(string puzzleId)
+        private PuzzleCatalogItem ResolveSelectedPuzzleItem(string puzzleId)
         {
-            if (!string.IsNullOrWhiteSpace(puzzleId))
+            if (!string.IsNullOrWhiteSpace(puzzleId) && _itemsById.TryGetValue(puzzleId, out var selected))
             {
-                return puzzleId;
+                return selected;
             }
 
-            if (!string.IsNullOrWhiteSpace(_catalog?.DefaultPuzzleId))
+            if (!string.IsNullOrWhiteSpace(_catalog?.DefaultPuzzleId) &&
+                _itemsById.TryGetValue(_catalog.DefaultPuzzleId, out var defaultItem))
             {
-                return _catalog.DefaultPuzzleId;
+                return defaultItem;
             }
 
-            return _items.Count > 0 ? _items[0].Id : "";
+            for (var i = 0; i < _items.Count; i++)
+            {
+                var item = _items[i];
+                if (item != null && !string.IsNullOrWhiteSpace(item.Id))
+                {
+                    return item;
+                }
+            }
+
+            return null;
+        }
+
+        private void RebuildItemsIndex()
+        {
+            _itemsById.Clear();
+
+            for (var i = 0; i < _items.Count; i++)
+            {
+                var item = _items[i];
+                if (item == null || string.IsNullOrWhiteSpace(item.Id)) continue;
+                _itemsById[item.Id] = item;
+            }
         }
 
         private int BeginSelectionRequest()

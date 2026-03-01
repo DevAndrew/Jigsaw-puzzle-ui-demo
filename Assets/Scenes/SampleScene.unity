@@ -397,6 +397,22 @@ PrefabInstance:
       propertyPath: _uiRootPrefab
       value: 
       objectReference: {fileID: 3652675033377449760, guid: 6645e1d63f5144fed9eae4df73a72667, type: 3}
+    - target: {fileID: 8051493235689750424, guid: 755ac00e6d0e74703ac62940ef0acffa, type: 3}
+      propertyPath: _homeScreenPrefab
+      value: 
+      objectReference: {fileID: 4301843872998512384, guid: 2b6a56c65836242faaba1c656682ac33, type: 3}
+    - target: {fileID: 8051493235689750424, guid: 755ac00e6d0e74703ac62940ef0acffa, type: 3}
+      propertyPath: _storeScreenPrefab
+      value: 
+      objectReference: {fileID: 1875631607821021296, guid: 9063349dcab7f40cda462440e92024a3, type: 3}
+    - target: {fileID: 8051493235689750424, guid: 755ac00e6d0e74703ac62940ef0acffa, type: 3}
+      propertyPath: _puzzleStartDialogPrefab
+      value: 
+      objectReference: {fileID: 1936560307877333106, guid: 62fdb45a221ac4522a4f5ab026b2d276, type: 3}
+    - target: {fileID: 8051493235689750424, guid: 755ac00e6d0e74703ac62940ef0acffa, type: 3}
+      propertyPath: _puzzleStartedScreenPrefab
+      value: 
+      objectReference: {fileID: 4573631864466095280, guid: 0c62cd40c4dfb44cb982245be1461f48, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

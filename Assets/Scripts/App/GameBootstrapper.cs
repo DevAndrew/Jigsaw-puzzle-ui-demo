@@ -16,6 +16,10 @@ namespace JigsawPrototype.App
     {
         [Header("Scene References")]
         [SerializeField] private UiRootView _uiRootPrefab;
+        [SerializeField] private GameObject _homeScreenPrefab;
+        [SerializeField] private GameObject _storeScreenPrefab;
+        [SerializeField] private GameObject _puzzleStartedScreenPrefab;
+        [SerializeField] private GameObject _puzzleStartDialogPrefab;
 
         private UiRootView _ui;
 
@@ -58,51 +62,51 @@ namespace JigsawPrototype.App
             _currency = new InMemoryCurrencyService(new InMemoryCurrencyService.Config { InitialBalance = 2400 });
             _ads = new SimulatedAdsService(new SimulatedAdsService.Config { SimulatedDelayMs = 1200 });
             const string defaultPuzzleId = "demo_1";
-            var previewEntries = new[]
+            var catalogItems = new List<PuzzleCatalogItem>
             {
-                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_1", AssetPath = "PuzzleImages/demo_img_1" },
-                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_2", AssetPath = "PuzzleImages/demo_img_2" },
-                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_3", AssetPath = "PuzzleImages/demo_img_3" },
-                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_4", AssetPath = "PuzzleImages/demo_img_4" },
-                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_5", AssetPath = "PuzzleImages/demo_img_5" },
-                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_6", AssetPath = "PuzzleImages/demo_img_6" },
-                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_7", AssetPath = "PuzzleImages/demo_img_7" },
-                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_8", AssetPath = "PuzzleImages/demo_img_8" },
-                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_9", AssetPath = "PuzzleImages/demo_img_9" },
-                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_10", AssetPath = "PuzzleImages/demo_img_10" },
-                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_11", AssetPath = "PuzzleImages/demo_img_11" },
-                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_12", AssetPath = "PuzzleImages/demo_img_12" },
+                new PuzzleCatalogItem("demo_1", "PuzzleImages/demo_img_1", 0),
+                new PuzzleCatalogItem("demo_2", "PuzzleImages/demo_img_2", 1),
+                new PuzzleCatalogItem("demo_3", "PuzzleImages/demo_img_3", 2),
+                new PuzzleCatalogItem("demo_4", "PuzzleImages/demo_img_4", 3),
+                new PuzzleCatalogItem("demo_5", "PuzzleImages/demo_img_5", 4),
+                new PuzzleCatalogItem("demo_6", "PuzzleImages/demo_img_6", 5),
+                new PuzzleCatalogItem("demo_7", "PuzzleImages/demo_img_7", 6),
+                new PuzzleCatalogItem("demo_8", "PuzzleImages/demo_img_8", 7),
+                new PuzzleCatalogItem("demo_9", "PuzzleImages/demo_img_9", 8),
+                new PuzzleCatalogItem("demo_10", "PuzzleImages/demo_img_10", 9),
+                new PuzzleCatalogItem("demo_11", "PuzzleImages/demo_img_11", 10),
+                new PuzzleCatalogItem("demo_12", "PuzzleImages/demo_img_12", 11),
             };
+
+            var defaultPreviewPath = "";
+            for (var i = 0; i < catalogItems.Count; i++)
+            {
+                if (catalogItems[i].Id == defaultPuzzleId)
+                {
+                    defaultPreviewPath = catalogItems[i].PreviewPath;
+                    break;
+                }
+            }
+
             _preview = new LocalFilePreviewService(new LocalFilePreviewService.Config
             {
-                DefaultPuzzleId = defaultPuzzleId,
-                Entries = previewEntries
+                DefaultPreviewPath = defaultPreviewPath
             });
-            var catalogItems = new List<PuzzleCatalogItem>(previewEntries.Length);
-            for (var i = 0; i < previewEntries.Length; i++)
-            {
-                var entry = previewEntries[i];
-                catalogItems.Add(new PuzzleCatalogItem(entry.PuzzleId, entry.AssetPath, i));
-            }
             _catalog = new StaticPuzzleCatalogService(catalogItems, defaultPuzzleId);
             _previewCache = new InMemoryPuzzlePreviewCache(capacity: 64);
 
             // Views (prefab-authored, instantiated under UiRootShell)
-            var homePrefab = LoadUiPrefab("UI/Screens/HomeScreen");
-            var storePrefab = LoadUiPrefab("UI/Screens/StoreScreen");
-            var startedPrefab = LoadUiPrefab("UI/Screens/PuzzleStartedScreen");
-            var puzzleStartDialogPrefab = LoadUiPrefab("UI/Dialogs/PuzzleStartDialog");
-
-            if (homePrefab == null || storePrefab == null || startedPrefab == null || puzzleStartDialogPrefab == null)
+            if (_homeScreenPrefab == null || _storeScreenPrefab == null || _puzzleStartedScreenPrefab == null || _puzzleStartDialogPrefab == null)
             {
+                Debug.LogError("GameBootstrapper: assign all UI prefab references in inspector.");
                 enabled = false;
                 return;
             }
 
-            var homeGo = Instantiate(homePrefab, _ui.ScreensRoot);
-            var storeGo = Instantiate(storePrefab, _ui.ScreensRoot);
-            var startedGo = Instantiate(startedPrefab, _ui.ScreensRoot);
-            var puzzleStartDialogGo = Instantiate(puzzleStartDialogPrefab, _ui.DialogsRoot);
+            var homeGo = Instantiate(_homeScreenPrefab, _ui.ScreensRoot);
+            var storeGo = Instantiate(_storeScreenPrefab, _ui.ScreensRoot);
+            var startedGo = Instantiate(_puzzleStartedScreenPrefab, _ui.ScreensRoot);
+            var puzzleStartDialogGo = Instantiate(_puzzleStartDialogPrefab, _ui.DialogsRoot);
 
             var homeView = RequireComponent<HomeScreenView>(homeGo);
             var storeView = RequireComponent<StoreScreenView>(storeGo);
@@ -132,7 +136,7 @@ namespace JigsawPrototype.App
 
             // Presenters
             _startedPresenter = new PuzzleStartedPresenter(_screens);
-            _puzzleStartPresenter = new PuzzleStartPresenter(_currency, _ads, _preview, _screens, puzzleStartDialogView, _startedPresenter, _dialogHost, defaultPuzzleId);
+            _puzzleStartPresenter = new PuzzleStartPresenter(_currency, _ads, _preview, _screens, puzzleStartDialogView, _startedPresenter, _dialogHost, defaultPuzzleId, defaultPreviewPath);
             _homePresenter = new HomePresenter(_currency, _catalog, _preview, _previewCache, _puzzleStartPresenter);
             _storePresenter = new StorePresenter(_currency, _screens, _puzzleStartPresenter);
 
@@ -154,16 +158,6 @@ namespace JigsawPrototype.App
             _puzzleStartPresenter?.Unbind();
             _storePresenter?.Unbind();
             _startedPresenter?.Unbind();
-        }
-
-        private static GameObject LoadUiPrefab(string resourcesPath)
-        {
-            var prefab = Resources.Load<GameObject>(resourcesPath);
-            if (prefab == null)
-            {
-                Debug.LogError($"UI prefab not found at Resources path '{resourcesPath}'.");
-            }
-            return prefab;
         }
 
         private static T RequireComponent<T>(GameObject go) where T : Component

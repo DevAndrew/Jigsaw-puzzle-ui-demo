@@ -6,7 +6,7 @@ namespace JigsawPrototype.Features.Puzzle.Preview
 {
     public interface IPuzzlePreviewService
     {
-        UniTask<Texture2D> GetPreviewAsync(string puzzleId, CancellationToken ct);
+        UniTask<Texture2D> GetPreviewAsync(string previewPath, CancellationToken ct);
     }
 }
 

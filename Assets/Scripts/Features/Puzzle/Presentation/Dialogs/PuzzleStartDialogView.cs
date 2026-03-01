@@ -69,8 +69,6 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
 
         private void Awake()
         {
-            _animator ??= GetComponent<DoTweenDialogAnimator>();
-
             _onPieces36 = () => PiecesSelected?.Invoke(PiecesPreset.P36);
             _onPieces64 = () => PiecesSelected?.Invoke(PiecesPreset.P64);
             _onPieces100 = () => PiecesSelected?.Invoke(PiecesPreset.P100);
