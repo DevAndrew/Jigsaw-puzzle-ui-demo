@@ -104,10 +104,15 @@ namespace JigsawPrototype.App
             var startedGo = Instantiate(startedPrefab, _ui.ScreensRoot);
             var puzzleStartDialogGo = Instantiate(puzzleStartDialogPrefab, _ui.DialogsRoot);
 
-            var homeView = RequireComponent<HomeScreenView>(homeGo, "HomeScreenView");
-            var storeView = RequireComponent<StoreScreenView>(storeGo, "StoreScreenView");
-            var startedView = RequireComponent<PuzzleStartedScreenView>(startedGo, "PuzzleStartedScreenView");
-            var puzzleStartDialogView = RequireComponent<PuzzleStartDialogView>(puzzleStartDialogGo, "PuzzleStartDialogView");
+            var homeView = RequireComponent<HomeScreenView>(homeGo);
+            var storeView = RequireComponent<StoreScreenView>(storeGo);
+            var startedView = RequireComponent<PuzzleStartedScreenView>(startedGo);
+            var puzzleStartDialogView = RequireComponent<PuzzleStartDialogView>(puzzleStartDialogGo);
+            if (homeView == null || storeView == null || startedView == null || puzzleStartDialogView == null)
+            {
+                enabled = false;
+                return;
+            }
 
             // Navigation
             _screens = new ScreenStack(new Dictionary<ScreenId, GameObject>
@@ -161,15 +166,21 @@ namespace JigsawPrototype.App
             return prefab;
         }
 
-        private static T RequireComponent<T>(GameObject go, string typeName) where T : Component
+        private static T RequireComponent<T>(GameObject go) where T : Component
         {
-            if (go == null) return null;
-            var c = go.GetComponent<T>();
-            if (c == null)
+            if (go == null)
             {
-                Debug.LogError($"Expected component '{typeName}' on '{go.name}'.");
+                Debug.LogError($"Expected component '{typeof(T).Name}', but target GameObject is null.");
+                return null;
             }
-            return c;
+
+            if (!go.TryGetComponent<T>(out var component) || component == null)
+            {
+                Debug.LogError($"Expected component '{typeof(T).Name}' on '{go.name}'.");
+                return null;
+            }
+
+            return component;
         }
     }
 }

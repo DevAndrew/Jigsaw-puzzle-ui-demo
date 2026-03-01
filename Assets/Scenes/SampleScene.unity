@@ -393,6 +393,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: GameBootstrapper
       objectReference: {fileID: 0}
+    - target: {fileID: 8051493235689750424, guid: 755ac00e6d0e74703ac62940ef0acffa, type: 3}
+      propertyPath: _uiRootPrefab
+      value: 
+      objectReference: {fileID: 3652675033377449760, guid: 6645e1d63f5144fed9eae4df73a72667, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
