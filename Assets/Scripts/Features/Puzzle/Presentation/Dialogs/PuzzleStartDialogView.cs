@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using JigsawPrototype.Core.UI;
 using TMPro;
@@ -63,6 +64,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
         private UnityAction _onStartFree;
         private UnityAction _onStartCoins;
         private UnityAction _onStartAd;
+        private CancellationTokenSource _animationCts;
         private Vector2 _previewBoundsSize;
 
         private void Awake()
@@ -95,6 +97,10 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
 
         private void OnDisable()
         {
+            _animationCts?.Cancel();
+            _animationCts?.Dispose();
+            _animationCts = null;
+
             _closeButton.onClick.RemoveListener(OnClose);
             _pieces36Button.onClick.RemoveListener(_onPieces36);
             _pieces64Button.onClick.RemoveListener(_onPieces64);
@@ -119,10 +125,15 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
         {
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
+            var animationToken = RenewAnimationToken();
 
             if (_animator != null)
             {
-                await _animator.PlayShowAsync();
+                var result = await _animator.PlayShowAsync(cancellationToken: animationToken);
+                if (result != DialogAnimationResult.Completed)
+                {
+                    return;
+                }
             }
 
             Shown?.Invoke();
@@ -136,9 +147,14 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
                 return;
             }
 
+            var animationToken = RenewAnimationToken();
             if (_animator != null)
             {
-                await _animator.PlayHideAsync();
+                var result = await _animator.PlayHideAsync(cancellationToken: animationToken);
+                if (result != DialogAnimationResult.Completed)
+                {
+                    return;
+                }
             }
 
             gameObject.SetActive(false);
@@ -256,6 +272,14 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
         private void OnClose()
         {
             CloseRequested?.Invoke();
+        }
+
+        private CancellationToken RenewAnimationToken()
+        {
+            _animationCts?.Cancel();
+            _animationCts?.Dispose();
+            _animationCts = new CancellationTokenSource();
+            return _animationCts.Token;
         }
     }
 }
