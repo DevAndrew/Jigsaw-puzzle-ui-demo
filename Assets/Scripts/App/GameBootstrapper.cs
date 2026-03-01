@@ -59,9 +59,15 @@ namespace JigsawPrototype.App
             }
 
             // Services (demo config)
-            _currency = new InMemoryCurrencyService(new InMemoryCurrencyService.Config { InitialBalance = 2400 });
-            _ads = new SimulatedAdsService(new SimulatedAdsService.Config { SimulatedDelayMs = 1200 });
-            const string defaultPuzzleId = "demo_1";
+            _currency = new InMemoryCurrencyService(new InMemoryCurrencyService.Config
+            {
+                InitialBalance = AppConstants.Economy.InitialBalance
+            });
+            _ads = new SimulatedAdsService(new SimulatedAdsService.Config
+            {
+                SimulatedDelayMs = AppConstants.Ads.SimulatedDelayMs
+            });
+            var defaultPuzzleId = AppConstants.Catalog.DefaultPuzzleId;
             var catalogItems = new List<PuzzleCatalogItem>
             {
                 new PuzzleCatalogItem("demo_1", "PuzzleImages/demo_img_1", 0),
@@ -93,7 +99,7 @@ namespace JigsawPrototype.App
                 DefaultPreviewPath = defaultPreviewPath
             });
             _catalog = new StaticPuzzleCatalogService(catalogItems, defaultPuzzleId);
-            _previewCache = new InMemoryPuzzlePreviewCache(capacity: 64);
+            _previewCache = new InMemoryPuzzlePreviewCache(capacity: AppConstants.Catalog.PreviewCacheCapacity);
 
             // Views (prefab-authored, instantiated under UiRootShell)
             if (_homeScreenPrefab == null || _storeScreenPrefab == null || _puzzleStartedScreenPrefab == null || _puzzleStartDialogPrefab == null)

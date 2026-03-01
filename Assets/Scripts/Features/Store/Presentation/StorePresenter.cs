@@ -1,5 +1,6 @@
 using JigsawPrototype.Core.Services.Currency;
 using JigsawPrototype.Core.UI;
+using JigsawPrototype.App;
 using JigsawPrototype.Features.Puzzle.Presentation.Dialogs;
 using Cysharp.Threading.Tasks;
 
@@ -42,13 +43,13 @@ namespace JigsawPrototype.Features.Store.Presentation
 
         private void OnBuySmall()
         {
-            _currency.Add(2000);
+            _currency.Add(AppConstants.Economy.StoreSmallPackCoins);
             Return();
         }
 
         private void OnBuyBig()
         {
-            _currency.Add(5000);
+            _currency.Add(AppConstants.Economy.StoreBigPackCoins);
             Return();
         }
 

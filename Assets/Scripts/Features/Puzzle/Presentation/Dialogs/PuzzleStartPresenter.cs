@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using JigsawPrototype.App;
 using JigsawPrototype.Core.Services.Ads;
 using JigsawPrototype.Core.Services.Currency;
 using JigsawPrototype.Core.UI;
@@ -12,8 +13,6 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
 {
     public sealed class PuzzleStartPresenter
     {
-        private const int CoinsCost = 4000;
-
         private readonly ICurrencyService _currency;
         private readonly IAdsService _ads;
         private readonly IPuzzlePreviewService _preview;
@@ -64,7 +63,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
                 _piecesPreset = dialog.InitialPiecesPreset;
             }
 
-            dialog.SetCoinsCost(CoinsCost);
+            dialog.SetCoinsCost(AppConstants.Economy.PuzzleStartCoinsCost);
             dialog.SetPiecesSelected(_piecesPreset);
             dialog.SetCoins(_currency.Balance);
             dialog.SetStatus("");
@@ -170,7 +169,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
         private void OnStartCoins()
         {
             if (_busy) return;
-            if (_currency.TrySpend(CoinsCost))
+            if (_currency.TrySpend(AppConstants.Economy.PuzzleStartCoinsCost))
             {
                 GoStartedAsync().Forget();
                 return;

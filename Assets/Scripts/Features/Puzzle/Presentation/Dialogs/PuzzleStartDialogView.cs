@@ -41,7 +41,13 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
         [Header("Status")]
         [SerializeField] private TMP_Text _statusText;
         [SerializeField] private TMP_Text _errorText;
-        
+
+        [Header("Theme")]
+        [SerializeField] private Color _previewReadyColor = Color.white;
+        [SerializeField] private Color _previewLoadingColor = new Color(1f, 1f, 1f, 0f);
+        [SerializeField] private Color _piecesSelectedColor = new Color(0.65f, 0.7f, 0.95f);
+        [SerializeField] private Color _piecesUnselectedColor = new Color(0.92f, 0.92f, 0.92f);
+
         [Header("Animation (optional)")]
         [SerializeField] private DoTweenDialogAnimator _animator;
 
@@ -164,7 +170,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             if (_previewImage == null) return;
 
             _previewImage.texture = texture;
-            _previewImage.color = Color.white;
+            _previewImage.color = _previewReadyColor;
             FitPreviewToBounds(texture);
         }
 
@@ -180,14 +186,14 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
 
             rt.sizeDelta = _previewBoundsSize;
             _previewImage.texture = null;
-            _previewImage.color = new Color(1f, 1f, 1f, 0f);
+            _previewImage.color = _previewLoadingColor;
         }
 
         public void SetPiecesSelected(PiecesPreset preset)
         {
-            SetSelected(_pieces36Button, preset == PiecesPreset.P36);
-            SetSelected(_pieces64Button, preset == PiecesPreset.P64);
-            SetSelected(_pieces100Button, preset == PiecesPreset.P100);
+            SetSelectedColor(_pieces36Button, preset == PiecesPreset.P36);
+            SetSelectedColor(_pieces64Button, preset == PiecesPreset.P64);
+            SetSelectedColor(_pieces100Button, preset == PiecesPreset.P100);
         }
 
         public void SetCoinsCost(int cost)
@@ -219,11 +225,11 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             _errorText.text = text ?? "";
         }
 
-        private static void SetSelected(Selectable selectable, bool selected)
+        private void SetSelectedColor(Selectable selectable, bool selected)
         {
             var img = selectable.targetGraphic as Image;
             if (img == null) return;
-            img.color = selected ? new Color(0.65f, 0.7f, 0.95f) : new Color(0.92f, 0.92f, 0.92f);
+            img.color = selected ? _piecesSelectedColor : _piecesUnselectedColor;
         }
 
         private void FitPreviewToBounds(Texture texture)

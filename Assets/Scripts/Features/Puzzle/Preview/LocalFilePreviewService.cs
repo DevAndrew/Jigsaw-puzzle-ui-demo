@@ -14,8 +14,6 @@ namespace JigsawPrototype.Features.Puzzle.Preview
 
         private readonly string _defaultPreviewPath;
 
-        private static Texture2D s_placeholder;
-
         public LocalFilePreviewService(Config config)
         {
             _defaultPreviewPath = config?.DefaultPreviewPath ?? "";
@@ -26,19 +24,19 @@ namespace JigsawPrototype.Features.Puzzle.Preview
             var assetPath = string.IsNullOrWhiteSpace(previewPath) ? _defaultPreviewPath : previewPath;
             if (string.IsNullOrWhiteSpace(assetPath))
             {
-                return GetPlaceholder();
+                return PreviewPlaceholderTexture.GetOrCreate();
             }
 
             var resourcesPath = NormalizeResourcesPath(assetPath);
             if (string.IsNullOrWhiteSpace(resourcesPath))
             {
-                return GetPlaceholder();
+                return PreviewPlaceholderTexture.GetOrCreate();
             }
 
             var req = Resources.LoadAsync<Texture2D>(resourcesPath);
             await req.ToUniTask(cancellationToken: ct);
             var texture = req.asset as Texture2D;
-            return texture ?? GetPlaceholder();
+            return texture ?? PreviewPlaceholderTexture.GetOrCreate();
         }
 
         private static string NormalizeResourcesPath(string assetPath)
@@ -71,22 +69,6 @@ namespace JigsawPrototype.Features.Puzzle.Preview
             }
 
             return normalized;
-        }
-
-        private static Texture2D GetPlaceholder()
-        {
-            if (s_placeholder != null) return s_placeholder;
-
-            s_placeholder = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-            s_placeholder.SetPixels(new[]
-            {
-                new Color(0.2f, 0.2f, 0.2f, 1f),
-                new Color(0.25f, 0.25f, 0.25f, 1f),
-                new Color(0.25f, 0.25f, 0.25f, 1f),
-                new Color(0.2f, 0.2f, 0.2f, 1f),
-            });
-            s_placeholder.Apply();
-            return s_placeholder;
         }
     }
 }

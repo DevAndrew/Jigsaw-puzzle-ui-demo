@@ -25,8 +25,6 @@ namespace JigsawPrototype.UI.Screens
         private IReadOnlyList<PuzzleCatalogItem> _items = Array.Empty<PuzzleCatalogItem>();
         private readonly Dictionary<string, PuzzleCatalogItem> _itemsById = new(StringComparer.Ordinal);
 
-        private static Texture2D s_errorPlaceholder;
-
         public HomePresenter(
             ICurrencyService currency,
             IPuzzleCatalogService catalog,
@@ -125,7 +123,7 @@ namespace JigsawPrototype.UI.Screens
             {
                 Debug.LogException(e);
                 loadError = "Failed to load preview.";
-                texture = GetErrorPlaceholder();
+                texture = PreviewPlaceholderTexture.GetOrCreate();
             }
 
             if (!IsSelectionCurrent(requestVersion, selectionToken))
@@ -138,7 +136,7 @@ namespace JigsawPrototype.UI.Screens
                 var args = new PuzzleStartArgs(
                     selectedPuzzleId,
                     selectedPreviewPath,
-                    texture ?? GetErrorPlaceholder(),
+                    texture ?? PreviewPlaceholderTexture.GetOrCreate(),
                     initialLoadError: loadError);
 
                 await _puzzleStartPresenter.OpenDialogAsync(args);
@@ -161,7 +159,7 @@ namespace JigsawPrototype.UI.Screens
         {
             if (item == null || string.IsNullOrWhiteSpace(item.Id))
             {
-                return GetErrorPlaceholder();
+                return PreviewPlaceholderTexture.GetOrCreate();
             }
 
             var puzzleId = item.Id;
@@ -247,21 +245,6 @@ namespace JigsawPrototype.UI.Screens
             _previewCache?.Clear();
         }
 
-        private static Texture2D GetErrorPlaceholder()
-        {
-            if (s_errorPlaceholder != null) return s_errorPlaceholder;
-
-            s_errorPlaceholder = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-            s_errorPlaceholder.SetPixels(new[]
-            {
-                new Color(0.2f, 0.2f, 0.2f, 1f),
-                new Color(0.25f, 0.25f, 0.25f, 1f),
-                new Color(0.25f, 0.25f, 0.25f, 1f),
-                new Color(0.2f, 0.2f, 0.2f, 1f),
-            });
-            s_errorPlaceholder.Apply();
-            return s_errorPlaceholder;
-        }
     }
 }
 
