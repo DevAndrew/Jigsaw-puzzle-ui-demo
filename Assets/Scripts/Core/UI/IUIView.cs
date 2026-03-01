@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Cysharp.Threading.Tasks;
 
 namespace JigsawPrototype.Core.UI
@@ -14,8 +15,8 @@ namespace JigsawPrototype.Core.UI
         event Action Shown;
         event Action Hidden;
 
-        UniTask ShowAsync();
-        UniTask HideAsync();
+        UniTask ShowAsync(CancellationToken cancellationToken = default);
+        UniTask HideAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Whether the view should accept user input (raycasts / interactables).

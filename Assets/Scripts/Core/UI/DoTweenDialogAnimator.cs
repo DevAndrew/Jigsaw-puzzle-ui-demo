@@ -6,12 +6,6 @@ using UnityEngine;
 
 namespace JigsawPrototype.Core.UI
 {
-    public enum DialogAnimationResult
-    {
-        Completed = 0,
-        Canceled = 1,
-    }
-
     /// <summary>
     /// Lightweight show/hide animation helper for dialogs.
     /// This component exists as a separate script file so Unity can add it via "Add Component".
@@ -32,10 +26,7 @@ namespace JigsawPrototype.Core.UI
         [SerializeField] private Ease hideEase = Ease.InBack;
         [SerializeField] private Vector3 hideToScale = new Vector3(0.9f, 0.9f, 0.9f);
 
-        private Tween _tween;
-        private UniTaskCompletionSource<DialogAnimationResult> _currentAnimationTcs;
-        private CancellationTokenRegistration _currentCancellationRegistration;
-        private Action _currentCompletionCallback;
+        private CancellationTokenSource _animationCts;
 
         private void Awake()
         {
@@ -45,35 +36,23 @@ namespace JigsawPrototype.Core.UI
 
         private void OnDisable()
         {
-            CompleteCurrentAnimation(DialogAnimationResult.Canceled, killTween: true, invokeCompletionCallback: false);
+            CancelAnimation();
         }
 
-        public UniTask<DialogAnimationResult> PlayShowAsync(Action onShown = null, CancellationToken cancellationToken = default)
+        public UniTask PlayShowAsync(Action onShown = null, CancellationToken cancellationToken = default)
         {
             canvasGroup.alpha = 0f;
             if (content != null) content.localScale = showFromScale;
 
-            return PlayAsync(
-                duration: showDuration,
-                fadeTarget: 1f,
-                scaleTarget: Vector3.one,
-                scaleEase: showEase,
-                onCompleted: onShown,
-                cancellationToken: cancellationToken);
+            return PlayAsync(showDuration, 1f, Vector3.one, showEase, onShown, cancellationToken);
         }
 
-        public UniTask<DialogAnimationResult> PlayHideAsync(Action onHidden = null, CancellationToken cancellationToken = default)
+        public UniTask PlayHideAsync(Action onHidden = null, CancellationToken cancellationToken = default)
         {
-            return PlayAsync(
-                duration: hideDuration,
-                fadeTarget: 0f,
-                scaleTarget: hideToScale,
-                scaleEase: hideEase,
-                onCompleted: onHidden,
-                cancellationToken: cancellationToken);
+            return PlayAsync(hideDuration, 0f, hideToScale, hideEase, onHidden, cancellationToken);
         }
 
-        private UniTask<DialogAnimationResult> PlayAsync(
+        private async UniTask PlayAsync(
             float duration,
             float fadeTarget,
             Vector3 scaleTarget,
@@ -81,67 +60,47 @@ namespace JigsawPrototype.Core.UI
             Action onCompleted,
             CancellationToken cancellationToken)
         {
-            CompleteCurrentAnimation(DialogAnimationResult.Canceled, killTween: true, invokeCompletionCallback: false);
+            CancelAnimation();
 
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return UniTask.FromResult(DialogAnimationResult.Canceled);
-            }
+            cancellationToken.ThrowIfCancellationRequested();
 
-            var tcs = new UniTaskCompletionSource<DialogAnimationResult>();
-            _currentAnimationTcs = tcs;
-            _currentCompletionCallback = onCompleted;
-
-            if (cancellationToken.CanBeCanceled)
-            {
-                _currentCancellationRegistration = cancellationToken.Register(() =>
-                {
-                    CompleteCurrentAnimation(DialogAnimationResult.Canceled, killTween: true, invokeCompletionCallback: false);
-                });
-            }
+            var cts = cancellationToken.CanBeCanceled
+                ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken)
+                : new CancellationTokenSource();
+            _animationCts = cts;
 
             var seq = DOTween.Sequence()
                 .SetUpdate(true)
                 .Append(canvasGroup.DOFade(fadeTarget, duration).SetEase(Ease.Linear));
 
+#pragma warning disable CS4014 // Sequence builder, not an awaitable call
             if (content != null)
-            {
                 seq.Join(content.DOScale(scaleTarget, duration).SetEase(scaleEase));
-            }
+#pragma warning restore CS4014
 
-            _tween = seq.OnComplete(() =>
+            try
             {
-                CompleteCurrentAnimation(DialogAnimationResult.Completed, killTween: false, invokeCompletionCallback: true);
-            });
+                await seq.ToUniTask(TweenCancelBehaviour.KillAndCancelAwait, cts.Token);
 
-            return tcs.Task;
+                onCompleted?.Invoke();
+            }
+            finally
+            {
+                if (_animationCts == cts)
+                    _animationCts = null;
+                cts.Dispose();
+            }
         }
 
-        private void CompleteCurrentAnimation(DialogAnimationResult result, bool killTween, bool invokeCompletionCallback)
+        private void CancelAnimation()
         {
-            var tween = _tween;
-            _tween = null;
-
-            if (killTween && tween != null && tween.active)
+            var cts = _animationCts;
+            _animationCts = null;
+            if (cts != null)
             {
-                tween.Kill(complete: false);
+                cts.Cancel();
+                cts.Dispose();
             }
-
-            _currentCancellationRegistration.Dispose();
-            _currentCancellationRegistration = default;
-
-            var callback = _currentCompletionCallback;
-            _currentCompletionCallback = null;
-
-            var tcs = _currentAnimationTcs;
-            _currentAnimationTcs = null;
-
-            if (invokeCompletionCallback && result == DialogAnimationResult.Completed)
-            {
-                callback?.Invoke();
-            }
-
-            tcs?.TrySetResult(result);
         }
     }
 }

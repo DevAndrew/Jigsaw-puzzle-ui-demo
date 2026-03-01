@@ -120,26 +120,37 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             Hidden?.Invoke();
         }
 
-        public async UniTask ShowAsync()
+        public async UniTask ShowAsync(CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
             var animationToken = RenewAnimationToken();
+            using var linked = CreateLinkedToken(animationToken, cancellationToken);
+            var token = linked?.Token ?? animationToken;
 
             if (_animator != null)
             {
-                var result = await _animator.PlayShowAsync(cancellationToken: animationToken);
-                if (result != DialogAnimationResult.Completed)
+                try
                 {
-                    return;
+                    await _animator.PlayShowAsync(cancellationToken: token);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Ensure canceled show does not leave an "orphan" active dialog.
+                    gameObject.SetActive(false);
+                    throw;
                 }
             }
 
             Shown?.Invoke();
         }
 
-        public async UniTask HideAsync()
+        public async UniTask HideAsync(CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (!gameObject.activeSelf)
             {
                 Hidden?.Invoke();
@@ -147,13 +158,11 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             }
 
             var animationToken = RenewAnimationToken();
+            using var linked = CreateLinkedToken(animationToken, cancellationToken);
+            var token = linked?.Token ?? animationToken;
             if (_animator != null)
             {
-                var result = await _animator.PlayHideAsync(cancellationToken: animationToken);
-                if (result != DialogAnimationResult.Completed)
-                {
-                    return;
-                }
+                await _animator.PlayHideAsync(cancellationToken: token);
             }
 
             gameObject.SetActive(false);
@@ -279,6 +288,14 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             _animationCts?.Dispose();
             _animationCts = new CancellationTokenSource();
             return _animationCts.Token;
+        }
+
+        private static CancellationTokenSource CreateLinkedToken(CancellationToken a, CancellationToken b)
+        {
+            if (!a.CanBeCanceled && !b.CanBeCanceled) return null;
+            if (!a.CanBeCanceled) return CancellationTokenSource.CreateLinkedTokenSource(b);
+            if (!b.CanBeCanceled) return CancellationTokenSource.CreateLinkedTokenSource(a);
+            return CancellationTokenSource.CreateLinkedTokenSource(a, b);
         }
     }
 }
