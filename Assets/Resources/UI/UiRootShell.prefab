@@ -137,10 +137,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76b695f5e474c4e1f9f6ab5be5b75641, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dialogsParent: {fileID: 7023493185786985777}
-  modalBackground: {fileID: 14760919603089202}
-  modalFadeInDuration: 0.12
-  modalFadeOutDuration: 0.1
+  _dialogsParent: {fileID: 7023493185786985777}
+  _modalBackground: {fileID: 14760919603089202}
+  _modalFadeInDuration: 0.12
+  _modalFadeOutDuration: 0.1
 --- !u!1 &6542518186581804799
 GameObject:
   m_ObjectHideFlags: 0

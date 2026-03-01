@@ -20,14 +20,14 @@ namespace JigsawPrototype.Core.UI
             public IUIView View;
             public bool Modal;
         }
-
+        
         [Header("Parents")]
-        [SerializeField] private Transform dialogsParent;
-
+        [SerializeField] private Transform _dialogsParent;
+        
         [Header("Modal background")]
-        [SerializeField] private CanvasGroup modalBackground;
-        [SerializeField] private float modalFadeInDuration = 0.12f;
-        [SerializeField] private float modalFadeOutDuration = 0.10f;
+        [SerializeField] private CanvasGroup _modalBackground;
+        [SerializeField] private float _modalFadeInDuration = 0.12f;
+        [SerializeField] private float _modalFadeOutDuration = 0.10f;
 
        private readonly AsyncLock _transitionLock = new AsyncLock();
         private readonly List<DialogEntry> _stack = new();
@@ -40,8 +40,8 @@ namespace JigsawPrototype.Core.UI
 
         private void Awake()
         {
-            if (dialogsParent == null)
-                dialogsParent = transform;
+            if (_dialogsParent == null)
+                _dialogsParent = transform;
 
             ResetModalBackgroundImmediate();
         }
@@ -215,13 +215,13 @@ namespace JigsawPrototype.Core.UI
 
         private void EnsureDialogParentAndOrder(IUIView dialog)
         {
-            if (dialog is not MonoBehaviour mb || dialogsParent == null)
+            if (dialog is not MonoBehaviour mb || _dialogsParent == null)
                 return;
 
             var tr = mb.transform;
 
-            if (tr.parent != dialogsParent)
-                tr.SetParent(dialogsParent, false);
+            if (tr.parent != _dialogsParent)
+                tr.SetParent(_dialogsParent, false);
 
             tr.SetAsLastSibling();
         }
@@ -241,25 +241,25 @@ namespace JigsawPrototype.Core.UI
 
         private void ResetModalBackgroundImmediate()
         {
-            if (modalBackground == null)
+            if (_modalBackground == null)
                 return;
 
             _modalTween?.Kill(false);
             _modalTween = null;
 
-            modalBackground.alpha = 0f;
-            modalBackground.blocksRaycasts = false;
-            modalBackground.interactable = false;
-            modalBackground.gameObject.SetActive(false);
+            _modalBackground.alpha = 0f;
+            _modalBackground.blocksRaycasts = false;
+            _modalBackground.interactable = false;
+            _modalBackground.gameObject.SetActive(false);
         }
 
         private void UpdateModalBackground()
         {
-            if (modalBackground == null)
+            if (_modalBackground == null)
                 return;
 
             var shouldShow = _stack.Count > 0 && _stack[^1].Modal;
-            modalBackground.interactable = false;
+            _modalBackground.interactable = false;
 
             PlaceModalBackgroundBeforeTopDialog();
 
@@ -268,58 +268,58 @@ namespace JigsawPrototype.Core.UI
 
             if (shouldShow)
             {
-                modalBackground.gameObject.SetActive(true);
-                modalBackground.blocksRaycasts = true;
+                _modalBackground.gameObject.SetActive(true);
+                _modalBackground.blocksRaycasts = true;
 
-                if (modalFadeInDuration <= 0f)
+                if (_modalFadeInDuration <= 0f)
                 {
-                    modalBackground.alpha = 1f;
+                    _modalBackground.alpha = 1f;
                     return;
                 }
 
-                _modalTween = modalBackground
-                    .DOFade(1f, modalFadeInDuration)
+                _modalTween = _modalBackground
+                    .DOFade(1f, _modalFadeInDuration)
                     .SetEase(Ease.Linear)
                     .SetUpdate(true);
             }
             else
             {
-                modalBackground.blocksRaycasts = false;
+                _modalBackground.blocksRaycasts = false;
 
-                if (!modalBackground.gameObject.activeSelf)
+                if (!_modalBackground.gameObject.activeSelf)
                 {
-                    modalBackground.alpha = 0f;
+                    _modalBackground.alpha = 0f;
                     return;
                 }
 
-                if (modalFadeOutDuration <= 0f)
+                if (_modalFadeOutDuration <= 0f)
                 {
-                    modalBackground.alpha = 0f;
-                    modalBackground.gameObject.SetActive(false);
+                    _modalBackground.alpha = 0f;
+                    _modalBackground.gameObject.SetActive(false);
                     return;
                 }
 
-                _modalTween = modalBackground
-                    .DOFade(0f, modalFadeOutDuration)
+                _modalTween = _modalBackground
+                    .DOFade(0f, _modalFadeOutDuration)
                     .SetEase(Ease.Linear)
                     .SetUpdate(true)
                     .OnComplete(() =>
                     {
-                        if (modalBackground != null)
-                            modalBackground.gameObject.SetActive(false);
+                        if (_modalBackground != null)
+                            _modalBackground.gameObject.SetActive(false);
                     });
             }
         }
 
         private void PlaceModalBackgroundBeforeTopDialog()
         {
-            if (modalBackground == null || dialogsParent == null || Top is not MonoBehaviour topMb)
+            if (_modalBackground == null || _dialogsParent == null || Top is not MonoBehaviour topMb)
                 return;
 
-            var backgroundTransform = modalBackground.transform;
+            var backgroundTransform = _modalBackground.transform;
 
-            if (backgroundTransform.parent != dialogsParent)
-                backgroundTransform.SetParent(dialogsParent, false);
+            if (backgroundTransform.parent != _dialogsParent)
+                backgroundTransform.SetParent(_dialogsParent, false);
 
             var topIndex = topMb.transform.GetSiblingIndex();
             backgroundTransform.SetSiblingIndex(Mathf.Max(0, topIndex - 1));

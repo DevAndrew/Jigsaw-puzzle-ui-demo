@@ -720,6 +720,10 @@ MonoBehaviour:
   _startCoinsLabel: {fileID: 4254000230021971123}
   _statusText: {fileID: 6374123160788420454}
   _errorText: {fileID: 1358609152355795013}
+  _previewReadyColor: {r: 1, g: 1, b: 1, a: 1}
+  _previewLoadingColor: {r: 1, g: 1, b: 1, a: 0}
+  _piecesSelectedColor: {r: 0.65, g: 0.7, b: 0.95, a: 1}
+  _piecesUnselectedColor: {r: 0.92, g: 0.92, b: 0.92, a: 1}
   _animator: {fileID: 5103251130166224667}
 --- !u!114 &5103251130166224667
 MonoBehaviour:
@@ -733,14 +737,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c230f671257f84902a61606c77c20ae4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canvasGroup: {fileID: 5021948157933858338}
-  content: {fileID: 262213356334902584}
-  showDuration: 0.2
-  showEase: 27
-  showFromScale: {x: 0.9, y: 0.9, z: 0.9}
-  hideDuration: 0.15
-  hideEase: 26
-  hideToScale: {x: 0.9, y: 0.9, z: 0.9}
+  _canvasGroup: {fileID: 5021948157933858338}
+  _content: {fileID: 262213356334902584}
+  _showDuration: 0.2
+  _showEase: 27
+  _showFromScale: {x: 0.9, y: 0.9, z: 0.9}
+  _hideDuration: 0.15
+  _hideEase: 26
+  _hideToScale: {x: 0.9, y: 0.9, z: 0.9}
 --- !u!1 &2723437022225720087
 GameObject:
   m_ObjectHideFlags: 0
