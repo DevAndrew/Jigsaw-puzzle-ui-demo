@@ -1,6 +1,7 @@
 using JigsawPrototype.Core.Services.Currency;
 using JigsawPrototype.Core.UI;
 using JigsawPrototype.Features.Puzzle.Presentation.Dialogs;
+using Cysharp.Threading.Tasks;
 
 namespace JigsawPrototype.Features.Store.Presentation
 {
@@ -8,17 +9,15 @@ namespace JigsawPrototype.Features.Store.Presentation
     {
         private readonly ICurrencyService _currency;
         private readonly ScreenStack _screens;
-        private readonly PuzzleStartDialogView _dialog;
-        private readonly DialogHost _dialogHost;
+        private readonly PuzzleStartPresenter _puzzleStartPresenter;
 
         private StoreScreenView _view;
 
-        public StorePresenter(ICurrencyService currency, ScreenStack screens, PuzzleStartDialogView dialog, DialogHost dialogHost)
+        public StorePresenter(ICurrencyService currency, ScreenStack screens, PuzzleStartPresenter puzzleStartPresenter)
         {
             _currency = currency;
             _screens = screens;
-            _dialog = dialog;
-            _dialogHost = dialogHost;
+            _puzzleStartPresenter = puzzleStartPresenter;
         }
 
         public void Bind(StoreScreenView view)
@@ -60,8 +59,13 @@ namespace JigsawPrototype.Features.Store.Presentation
 
         private void Return()
         {
+            ReturnAsync().Forget();
+        }
+
+        private async UniTask ReturnAsync()
+        {
             _screens.Pop();
-            _dialogHost.Push(_dialog, modal: true);
+            await _puzzleStartPresenter.ReopenLastDialogAsync();
         }
 
         private void OnBalanceChanged(int coins)

@@ -1,9 +1,7 @@
 using System;
-using System.IO;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Networking;
 
 namespace JigsawPrototype.Features.Puzzle.Preview
 {
@@ -47,21 +45,48 @@ namespace JigsawPrototype.Features.Puzzle.Preview
                 return GetPlaceholder();
             }
 
-            var fullPath = Path.Combine(Application.dataPath, assetPath);
-            if (!File.Exists(fullPath))
+            var resourcesPath = NormalizeResourcesPath(assetPath);
+            if (string.IsNullOrWhiteSpace(resourcesPath))
             {
                 return GetPlaceholder();
             }
 
-            using var req = UnityWebRequestTexture.GetTexture($"file://{fullPath}");
-            await req.SendWebRequest().ToUniTask(cancellationToken: ct);
+            var req = Resources.LoadAsync<Texture2D>(resourcesPath);
+            await req.ToUniTask(cancellationToken: ct);
+            var texture = req.asset as Texture2D;
+            return texture ?? GetPlaceholder();
+        }
 
-            if (req.result != UnityWebRequest.Result.Success)
+        private static string NormalizeResourcesPath(string assetPath)
+        {
+            if (string.IsNullOrWhiteSpace(assetPath))
             {
-                return GetPlaceholder();
+                return "";
             }
 
-            return DownloadHandlerTexture.GetContent(req) ?? GetPlaceholder();
+            var normalized = assetPath.Trim().Replace('\\', '/');
+
+            const string resourcesPrefix = "Assets/Resources/";
+            var resourcesPrefixIndex = normalized.IndexOf(resourcesPrefix, StringComparison.OrdinalIgnoreCase);
+            if (resourcesPrefixIndex >= 0)
+            {
+                normalized = normalized.Substring(resourcesPrefixIndex + resourcesPrefix.Length);
+            }
+
+            const string shortResourcesPrefix = "Resources/";
+            if (normalized.StartsWith(shortResourcesPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                normalized = normalized.Substring(shortResourcesPrefix.Length);
+            }
+
+            var slashIndex = normalized.LastIndexOf('/');
+            var dotIndex = normalized.LastIndexOf('.');
+            if (dotIndex > slashIndex)
+            {
+                normalized = normalized.Substring(0, dotIndex);
+            }
+
+            return normalized;
         }
 
         private string TryGetAssetPath(string puzzleId)

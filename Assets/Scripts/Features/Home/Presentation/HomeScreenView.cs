@@ -10,7 +10,7 @@ namespace JigsawPrototype.UI.Screens
     {
         [Header("Top Bar")]
         [SerializeField] private TMP_Text coinsText;
-        [Header("Puzzle Grid")]
+        [Header("Puzzle Tiles")]
         [SerializeField] private RectTransform gridRoot;
         [SerializeField] private PuzzleTileView tilePrefab;
         [SerializeField] private Color tilePlaceholderColor = new Color(1f, 1f, 1f, 0f);

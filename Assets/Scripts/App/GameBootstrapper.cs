@@ -12,11 +12,11 @@ using UnityEngine;
 
 namespace JigsawPrototype.App
 {
-    /// <summary>
-    /// Loads prefab-authored UI and wires presenters/services.
-    /// </summary>
     public sealed class GameBootstrapper : MonoBehaviour
     {
+        [Header("Scene References")]
+        [SerializeField] private UiRootView _uiRootPrefab;
+
         private UiRootView _ui;
 
         private InMemoryCurrencyService _currency;
@@ -37,22 +37,14 @@ namespace JigsawPrototype.App
         {
             DontDestroyOnLoad(gameObject);
 
-            // Ensure a single UI root source of truth.
-            var existingUis = FindObjectsOfType<UiRootView>(includeInactive: true);
-            for (var i = 0; i < existingUis.Length; i++)
+            if (_uiRootPrefab == null)
             {
-                if (existingUis[i] != null) Destroy(existingUis[i].gameObject);
-            }
-
-            var uiRootPrefab = Resources.Load<UiRootView>("UiRootShell");
-            if (uiRootPrefab == null)
-            {
-                Debug.LogError("UiRootShell prefab not found. Create `Assets/Resources/UiRootShell.prefab` with UiRootView.");
+                Debug.LogError("GameBootstrapper: assign UiRootPrefab in inspector.");
                 enabled = false;
                 return;
             }
 
-            _ui = Instantiate(uiRootPrefab);
+            _ui = Instantiate(_uiRootPrefab);
             DontDestroyOnLoad(_ui.gameObject);
 
             if (_ui.ScreensRoot == null || _ui.DialogsRoot == null)
@@ -68,9 +60,18 @@ namespace JigsawPrototype.App
             const string defaultPuzzleId = "demo_1";
             var previewEntries = new[]
             {
-                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_1", AssetPath = "Sprites/demo_img_1.jpg" },
-                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_2", AssetPath = "Sprites/demo_img_2.jpg" },
-                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_3", AssetPath = "Sprites/demo_img_3.jpg" },
+                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_1", AssetPath = "PuzzleImages/demo_img_1" },
+                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_2", AssetPath = "PuzzleImages/demo_img_2" },
+                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_3", AssetPath = "PuzzleImages/demo_img_3" },
+                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_4", AssetPath = "PuzzleImages/demo_img_4" },
+                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_5", AssetPath = "PuzzleImages/demo_img_5" },
+                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_6", AssetPath = "PuzzleImages/demo_img_6" },
+                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_7", AssetPath = "PuzzleImages/demo_img_7" },
+                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_8", AssetPath = "PuzzleImages/demo_img_8" },
+                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_9", AssetPath = "PuzzleImages/demo_img_9" },
+                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_10", AssetPath = "PuzzleImages/demo_img_10" },
+                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_11", AssetPath = "PuzzleImages/demo_img_11" },
+                new LocalFilePreviewService.PreviewEntry { PuzzleId = "demo_12", AssetPath = "PuzzleImages/demo_img_12" },
             };
             _preview = new LocalFilePreviewService(new LocalFilePreviewService.Config
             {
@@ -128,7 +129,7 @@ namespace JigsawPrototype.App
             _startedPresenter = new PuzzleStartedPresenter(_screens);
             _puzzleStartPresenter = new PuzzleStartPresenter(_currency, _ads, _preview, _screens, puzzleStartDialogView, _startedPresenter, _dialogHost, defaultPuzzleId);
             _homePresenter = new HomePresenter(_currency, _catalog, _preview, _previewCache, _puzzleStartPresenter);
-            _storePresenter = new StorePresenter(_currency, _screens, puzzleStartDialogView, _dialogHost);
+            _storePresenter = new StorePresenter(_currency, _screens, _puzzleStartPresenter);
 
             // Bind views
             _homePresenter.Bind(homeView);

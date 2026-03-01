@@ -151,9 +151,26 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
 
         public void SetPreview(Texture2D texture)
         {
+            if (previewImage == null) return;
+
             previewImage.texture = texture;
             previewImage.color = Color.white;
             FitPreviewToBounds(texture);
+        }
+
+        public void SetPreviewLoading()
+        {
+            if (previewImage == null) return;
+
+            var rt = previewImage.rectTransform;
+            if (_previewBoundsSize.x <= 0f || _previewBoundsSize.y <= 0f)
+            {
+                _previewBoundsSize = rt.sizeDelta;
+            }
+
+            rt.sizeDelta = _previewBoundsSize;
+            previewImage.texture = null;
+            previewImage.color = new Color(1f, 1f, 1f, 0f);
         }
 
         public void SetPiecesSelected(PiecesPreset preset)

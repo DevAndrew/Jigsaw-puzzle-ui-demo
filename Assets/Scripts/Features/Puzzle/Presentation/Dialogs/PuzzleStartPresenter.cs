@@ -99,7 +99,29 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
         public UniTask OpenDialogAsync(PuzzleStartArgs args)
         {
             ApplyArgs(args);
+
+            // Set preview before show animation starts, so old image never flashes.
+            if (_prefetchedPreview != null && _prefetchedPuzzleId == _selectedPuzzleId)
+            {
+                _view.SetPreview(_prefetchedPreview);
+            }
+            else
+            {
+                _view.SetPreviewLoading();
+            }
+
             return _dialogHost.PushAsync(_view, modal: true);
+        }
+
+        public UniTask ReopenLastDialogAsync()
+        {
+            var args = new PuzzleStartArgs(
+                _selectedPuzzleId,
+                _prefetchedPreview,
+                _piecesPreset,
+                _pendingLoadError);
+
+            return OpenDialogAsync(args);
         }
 
         private void OnDialogShown()
@@ -136,7 +158,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
         private void OnStartFree()
         {
             if (_busy) return;
-            GoStarted();
+            GoStartedAsync().Forget();
         }
 
         private void OnStartCoins()
@@ -144,13 +166,12 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             if (_busy) return;
             if (_currency.TrySpend(CoinsCost))
             {
-                GoStarted();
+                GoStartedAsync().Forget();
                 return;
             }
 
             // Variant B: silently go to store.
-            _dialogHost.Hide(_view);
-            _screens.Push(ScreenId.Store);
+            GoStoreAsync().Forget();
         }
 
         private void OnStartAd()
@@ -213,7 +234,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
                 var result = await _ads.ShowRewardedAsync(AdPlacements.PuzzleStart, _cts.Token);
                 if (result == AdResult.Success)
                 {
-                    GoStarted();
+                    await GoStartedAsync();
                 }
                 else
                 {
@@ -234,11 +255,19 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             }
         }
 
-        private void GoStarted()
+        private async UniTask GoStartedAsync()
         {
-            _dialogHost.Hide(_view);
+            _busy = true;
+            await _dialogHost.HideAsync(_view);
             _startedPresenter.SetPieces((int)_piecesPreset);
             _screens.Replace(ScreenId.PuzzleStarted);
+        }
+
+        private async UniTask GoStoreAsync()
+        {
+            _busy = true;
+            await _dialogHost.HideAsync(_view);
+            _screens.Push(ScreenId.Store);
         }
 
         private void BeginBusy(string status)
