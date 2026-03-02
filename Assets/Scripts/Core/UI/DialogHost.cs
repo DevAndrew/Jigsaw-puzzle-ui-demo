@@ -9,7 +9,7 @@ using UnityEngine;
 namespace JigsawPrototype.Core.UI
 {
     /// <summary>
-    /// Simple dialog stack with optional modal background.
+    /// Dialog stack with optional modal background.
     /// Sequential operations only: Push / Pop / Hide are serialized internally.
     /// New calls cancel an in-flight transition (latest-wins).
     /// </summary>

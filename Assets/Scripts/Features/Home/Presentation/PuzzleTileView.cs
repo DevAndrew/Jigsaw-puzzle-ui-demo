@@ -7,8 +7,7 @@ namespace JigsawPrototype.Features.Home.Presentation
     public sealed class PuzzleTileView : MonoBehaviour
     {
         [SerializeField] private Button _button;
-        [SerializeField] private RawImage _previewImage;
-        [SerializeField] private AspectRatioFitter _previewAspectFitter;
+        [SerializeField] private Image _previewImage;
 
         private string _puzzleId;
         private Action<string> _onSelected;
@@ -37,17 +36,13 @@ namespace JigsawPrototype.Features.Home.Presentation
             SetInteractable(true);
         }
 
-        public void SetPreview(Texture2D texture, Color placeholderColor)
+        public void SetPreview(Sprite sprite, Color placeholderColor)
         {
             if (_previewImage == null) return;
 
-            _previewImage.texture = texture;
-            _previewImage.color = texture == null ? placeholderColor : Color.white;
-
-            if (_previewAspectFitter != null && texture != null && texture.height > 0)
-            {
-                _previewAspectFitter.aspectRatio = (float)texture.width / texture.height;
-            }
+            _previewImage.sprite = sprite;
+            _previewImage.color = sprite == null ? placeholderColor : Color.white;
+            _previewImage.preserveAspect = true;
         }
 
         public void SetInteractable(bool value)

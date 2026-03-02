@@ -64,14 +64,14 @@ namespace JigsawPrototype.Features.Home.Presentation
             }
         }
 
-        public void SetTilePreview(string puzzleId, Texture2D texture)
+        public void SetTilePreview(string puzzleId, Sprite sprite)
         {
             if (!_tilesById.TryGetValue(puzzleId, out var tile) || tile == null)
             {
                 return;
             }
 
-            tile.SetPreview(texture, _tilePlaceholderColor);
+            tile.SetPreview(sprite, _tilePlaceholderColor);
         }
 
         public void SetGridInteractable(bool interactable)

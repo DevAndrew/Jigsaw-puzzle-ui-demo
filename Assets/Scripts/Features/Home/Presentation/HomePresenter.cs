@@ -23,6 +23,7 @@ namespace JigsawPrototype.Features.Home.Presentation
         private int _selectionVersion;
         private IReadOnlyList<PuzzleCatalogItem> _items = Array.Empty<PuzzleCatalogItem>();
         private readonly Dictionary<string, PuzzleCatalogItem> _itemsById = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, Sprite> _previewSpritesById = new(StringComparer.Ordinal);
 
         public HomePresenter(
             ICurrencyService currency,
@@ -42,6 +43,7 @@ namespace JigsawPrototype.Features.Home.Presentation
             _lifetimeCts = new CancellationTokenSource();
             _items = _catalog?.GetItems() ?? Array.Empty<PuzzleCatalogItem>();
             RebuildItemsIndex();
+            _previewSpritesById.Clear();
             _view.SetCoins(_currency.Balance);
             _view.RenderCatalog(_items);
             _view.PuzzleSelected += OnPuzzleSelected;
@@ -73,8 +75,8 @@ namespace JigsawPrototype.Features.Home.Presentation
 
                 try
                 {
-                    var texture = await GetOrLoadPreviewAsync(item, ct);
-                    _view?.SetTilePreview(item.Id, texture);
+                    var sprite = await GetOrLoadPreviewSpriteAsync(item, ct);
+                    _view?.SetTilePreview(item.Id, sprite);
                 }
                 catch (OperationCanceledException)
                 {
@@ -109,8 +111,21 @@ namespace JigsawPrototype.Features.Home.Presentation
             var loadError = "";
             try
             {
+                var sprite = await GetOrLoadPreviewSpriteAsync(selectedItem, selectionToken);
+                _view.SetTilePreview(selectedPuzzleId, sprite);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
+
+            try
+            {
                 texture = await GetOrLoadPreviewAsync(selectedItem, selectionToken);
-                _view.SetTilePreview(selectedPuzzleId, texture);
             }
             catch (OperationCanceledException)
             {
@@ -161,6 +176,25 @@ namespace JigsawPrototype.Features.Home.Presentation
 
             var texture = await _preview.GetPreviewAsync(item.PreviewPath, ct);
             return texture;
+        }
+
+        private async UniTask<Sprite> GetOrLoadPreviewSpriteAsync(PuzzleCatalogItem item, CancellationToken ct)
+        {
+            if (item == null || string.IsNullOrWhiteSpace(item.Id))
+            {
+                return null;
+            }
+
+            if (_previewSpritesById.TryGetValue(item.Id, out var cached) && cached != null)
+            {
+                return cached;
+            }
+
+            var request = Resources.LoadAsync<Sprite>(item.PreviewPath);
+            await request.ToUniTask(cancellationToken: ct);
+            var sprite = request.asset as Sprite;
+            _previewSpritesById[item.Id] = sprite;
+            return sprite;
         }
 
         private PuzzleCatalogItem ResolveSelectedPuzzleItem(string puzzleId)

@@ -6,10 +6,6 @@ using UnityEngine;
 
 namespace JigsawPrototype.Core.UI
 {
-    /// <summary>
-    /// Lightweight show/hide animation helper for dialogs.
-    /// This component exists as a separate script file so Unity can add it via "Add Component".
-    /// </summary>
     [RequireComponent(typeof(CanvasGroup))]
     public sealed class DoTweenDialogAnimator : MonoBehaviour
     {
@@ -31,7 +27,10 @@ namespace JigsawPrototype.Core.UI
         private void Awake()
         {
             if (_canvasGroup == null) _canvasGroup = GetComponent<CanvasGroup>();
-            if (_content == null) _content = transform as RectTransform;
+            if (_content == null && !TryGetComponent(out _content))
+            {
+                Debug.LogError($"{nameof(DoTweenDialogAnimator)} requires RectTransform on {name}", this);
+            }
         }
 
         private void OnDisable()

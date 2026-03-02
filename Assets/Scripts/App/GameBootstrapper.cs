@@ -52,7 +52,7 @@ namespace JigsawPrototype.App
 
             if (_ui.ScreensRoot == null || _ui.DialogsRoot == null)
             {
-                Debug.LogError("UiRoot is missing ScreensRoot and/or DialogsRoot. Expected hierarchy: Canvas/Screens and Canvas/Dialogs.");
+                Debug.LogError("UiRoot is missing one or more required roots. Expected: Canvas/Screens and Canvas/Dialogs.");
                 enabled = false;
                 return;
             }

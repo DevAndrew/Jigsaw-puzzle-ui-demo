@@ -11,8 +11,6 @@ namespace JigsawPrototype.Core.UI
         [Header("Hosts")]
         [SerializeField] private DialogHost _dialogHost;
 
-        private bool _wired;
-
         public Transform ScreensRoot
         {
             get
