@@ -3,19 +3,19 @@ using Cysharp.Threading.Tasks;
 
 namespace JigsawPrototype.Features.Puzzle.Presentation.Screens
 {
-    public sealed class PuzzleStartedPresenter
+    public sealed class PuzzleGameplayPresenter
     {
         private readonly ScreenStack _screens;
         private readonly DialogHost _dialogHost;
-        private PuzzleStartedScreenView _view;
+        private PuzzleGameplayScreenView _view;
 
-        public PuzzleStartedPresenter(ScreenStack screens, DialogHost dialogHost)
+        public PuzzleGameplayPresenter(ScreenStack screens, DialogHost dialogHost)
         {
             _screens = screens;
             _dialogHost = dialogHost;
         }
 
-        public void Bind(PuzzleStartedScreenView view)
+        public void Bind(PuzzleGameplayScreenView view)
         {
             _view = view;
             _view.BackRequested += OnBack;
@@ -30,7 +30,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Screens
 
         public void SetPieces(int pieces)
         {
-            _view?.SetTitle($"Puzzle started! Pieces: {pieces}");
+            _view?.SetTitle($"Puzzle in progress. Pieces: {pieces}");
         }
 
         private void OnBack()
@@ -45,4 +45,3 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Screens
         }
     }
 }
-

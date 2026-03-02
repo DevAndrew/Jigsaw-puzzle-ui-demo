@@ -47,7 +47,7 @@ namespace JigsawPrototype.Features.Home.Presentation
             _view.PuzzleSelected += OnPuzzleSelected;
             _currency.BalanceChanged += OnBalanceChanged;
 
-            WarmupCatalogPreviewsAsync(_lifetimeCts.Token).Forget();
+            FetchAndApplyCatalogPreviewsAsync(_lifetimeCts.Token).Forget();
         }
 
         public void Unbind()
@@ -64,7 +64,7 @@ namespace JigsawPrototype.Features.Home.Presentation
             OpenPuzzleDialogAsync(puzzleId).Forget();
         }
 
-        private async UniTask WarmupCatalogPreviewsAsync(CancellationToken ct)
+        private async UniTask FetchAndApplyCatalogPreviewsAsync(CancellationToken ct)
         {
             for (var i = 0; i < _items.Count; i++)
             {

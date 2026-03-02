@@ -4,7 +4,7 @@ namespace JigsawPrototype.Core.UI
     {
         Home = 0,
         Store = 1,
-        PuzzleStarted = 2,
+        PuzzleGameplay = 2,
     }
 }
 

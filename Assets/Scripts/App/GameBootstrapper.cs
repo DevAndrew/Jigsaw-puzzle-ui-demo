@@ -31,7 +31,7 @@ namespace JigsawPrototype.App
         private HomePresenter _homePresenter;
         private PuzzleStartPresenter _puzzleStartPresenter;
         private StorePresenter _storePresenter;
-        private PuzzleStartedPresenter _startedPresenter;
+        private PuzzleGameplayPresenter _gameplayPresenter;
 
         private ScreenStack _screens;
         private DialogHost _dialogHost;
@@ -109,14 +109,14 @@ namespace JigsawPrototype.App
 
             var homeGo = Instantiate(_homeScreenPrefab, _ui.ScreensRoot);
             var storeGo = Instantiate(_storeScreenPrefab, _ui.ScreensRoot);
-            var startedGo = Instantiate(_puzzleStartedScreenPrefab, _ui.ScreensRoot);
+            var gameplayGo = Instantiate(_puzzleStartedScreenPrefab, _ui.ScreensRoot);
             var puzzleStartDialogGo = Instantiate(_puzzleStartDialogPrefab, _ui.DialogsRoot);
 
             var homeView = RequireComponent<HomeScreenView>(homeGo);
             var storeView = RequireComponent<StoreScreenView>(storeGo);
-            var startedView = RequireComponent<PuzzleStartedScreenView>(startedGo);
+            var gameplayView = RequireComponent<PuzzleGameplayScreenView>(gameplayGo);
             var puzzleStartDialogView = RequireComponent<PuzzleStartDialogView>(puzzleStartDialogGo);
-            if (homeView == null || storeView == null || startedView == null || puzzleStartDialogView == null)
+            if (homeView == null || storeView == null || gameplayView == null || puzzleStartDialogView == null)
             {
                 enabled = false;
                 return;
@@ -127,7 +127,7 @@ namespace JigsawPrototype.App
             {
                 { ScreenId.Home, homeView.gameObject },
                 { ScreenId.Store, storeView.gameObject },
-                { ScreenId.PuzzleStarted, startedView.gameObject }
+                { ScreenId.PuzzleGameplay, gameplayView.gameObject }
             });
 
             _dialogHost = _ui.DialogHost;
@@ -139,8 +139,8 @@ namespace JigsawPrototype.App
             }
 
             // Presenters
-            _startedPresenter = new PuzzleStartedPresenter(_screens, _dialogHost);
-            _puzzleStartPresenter = new PuzzleStartPresenter(_currency, _ads, _preview, _screens, puzzleStartDialogView, _startedPresenter, _dialogHost, defaultPuzzleId, defaultPreviewPath);
+            _gameplayPresenter = new PuzzleGameplayPresenter(_screens, _dialogHost);
+            _puzzleStartPresenter = new PuzzleStartPresenter(_currency, _ads, _preview, _screens, puzzleStartDialogView, _gameplayPresenter, _dialogHost, defaultPuzzleId, defaultPreviewPath);
             _homePresenter = new HomePresenter(_currency, _catalog, _preview, _puzzleStartPresenter);
             _storePresenter = new StorePresenter(_currency, _screens, _puzzleStartPresenter);
 
@@ -148,12 +148,12 @@ namespace JigsawPrototype.App
             _homePresenter.Bind(homeView);
             _puzzleStartPresenter.Bind(puzzleStartDialogView);
             _storePresenter.Bind(storeView);
-            _startedPresenter.Bind(startedView);
+            _gameplayPresenter.Bind(gameplayView);
 
             // Initial state
             _screens.Replace(ScreenId.Home);
             puzzleStartDialogView.HideImmediate();
-            _startedPresenter.SetPieces((int)puzzleStartDialogView.InitialPiecesPreset);
+            _gameplayPresenter.SetPieces((int)puzzleStartDialogView.InitialPiecesPreset);
         }
 
         private void OnDestroy()
@@ -161,7 +161,7 @@ namespace JigsawPrototype.App
             _homePresenter?.Unbind();
             _puzzleStartPresenter?.Unbind();
             _storePresenter?.Unbind();
-            _startedPresenter?.Unbind();
+            _gameplayPresenter?.Unbind();
         }
 
         private static T RequireComponent<T>(GameObject go) where T : Component

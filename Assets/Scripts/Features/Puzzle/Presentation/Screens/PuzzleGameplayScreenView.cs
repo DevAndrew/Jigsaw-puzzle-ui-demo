@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 namespace JigsawPrototype.Features.Puzzle.Presentation.Screens
 {
-    public sealed class PuzzleStartedScreenView : MonoBehaviour
+    public sealed class PuzzleGameplayScreenView : MonoBehaviour
     {
         [SerializeField] private TMP_Text _titleText;
         [SerializeField] private Button _backButton;
@@ -33,4 +33,3 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Screens
         }
     }
 }
-

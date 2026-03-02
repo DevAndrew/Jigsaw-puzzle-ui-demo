@@ -18,7 +18,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
         private readonly IPuzzlePreviewService _preview;
         private readonly ScreenStack _screens;
         private readonly PuzzleStartDialogView _view;
-        private readonly PuzzleStartedPresenter _startedPresenter;
+        private readonly PuzzleGameplayPresenter _gameplayPresenter;
         private readonly DialogHost _dialogHost;
         private readonly string _defaultPuzzleId;
         private readonly string _defaultPreviewPath;
@@ -38,7 +38,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             IPuzzlePreviewService preview,
             ScreenStack screens,
             PuzzleStartDialogView view,
-            PuzzleStartedPresenter startedPresenter,
+            PuzzleGameplayPresenter gameplayPresenter,
             DialogHost dialogHost,
             string defaultPuzzleId,
             string defaultPreviewPath)
@@ -48,7 +48,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             _preview = preview;
             _screens = screens;
             _view = view;
-            _startedPresenter = startedPresenter;
+            _gameplayPresenter = gameplayPresenter;
             _dialogHost = dialogHost;
             _defaultPuzzleId = defaultPuzzleId ?? "";
             _defaultPreviewPath = defaultPreviewPath ?? "";
@@ -163,7 +163,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
         private void OnStartFree()
         {
             if (_busy) return;
-            GoStartedAsync().Forget();
+            GoGameplayAsync().Forget();
         }
 
         private void OnStartCoins()
@@ -171,7 +171,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             if (_busy) return;
             if (_currency.TrySpend(AppConstants.Economy.PuzzleStartCoinsCost))
             {
-                GoStartedAsync().Forget();
+                GoGameplayAsync().Forget();
                 return;
             }
 
@@ -240,7 +240,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
                 var result = await _ads.ShowRewardedAsync(AdPlacements.PuzzleStart, _cts.Token);
                 if (result == AdResult.Success)
                 {
-                    await GoStartedAsync();
+                    await GoGameplayAsync();
                 }
                 else
                 {
@@ -261,12 +261,12 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             }
         }
 
-        private async UniTask GoStartedAsync()
+        private async UniTask GoGameplayAsync()
         {
             _busy = true;
             await _dialogHost.HideAllAsync();
-            _startedPresenter.SetPieces((int)_piecesPreset);
-            _screens.Replace(ScreenId.PuzzleStarted);
+            _gameplayPresenter.SetPieces((int)_piecesPreset);
+            _screens.Replace(ScreenId.PuzzleGameplay);
         }
 
         private async UniTask GoStoreAsync()
