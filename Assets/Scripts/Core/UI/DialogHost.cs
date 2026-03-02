@@ -10,7 +10,7 @@ namespace JigsawPrototype.Core.UI
 {
     /// <summary>
     /// Dialog stack with optional modal background.
-    /// Sequential operations only: Push / Pop / Hide are serialized internally.
+    /// Sequential operations only: Push / Pop / Hide / HideAllAsync are serialized internally.
     /// New calls cancel an in-flight transition (latest-wins).
     /// </summary>
     public sealed class DialogHost : MonoBehaviour
