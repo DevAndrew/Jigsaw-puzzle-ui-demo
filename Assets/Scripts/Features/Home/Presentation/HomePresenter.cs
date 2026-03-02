@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using JigsawPrototype.Core.Async;
 using JigsawPrototype.Core.Services.Currency;
 using JigsawPrototype.Features.Home.Catalog;
 using JigsawPrototype.Features.Puzzle.Presentation.Dialogs;
@@ -20,7 +21,7 @@ namespace JigsawPrototype.Features.Home.Presentation
         private HomeScreenView _view;
         private CancellationTokenSource _lifetimeCts;
         private CancellationTokenSource _selectionCts;
-        private int _selectionVersion;
+        private readonly AsyncLock _selectionLock = new AsyncLock();
         private IReadOnlyList<PuzzleCatalogItem> _items = Array.Empty<PuzzleCatalogItem>();
         private readonly Dictionary<string, PuzzleCatalogItem> _itemsById = new(StringComparer.Ordinal);
 
@@ -91,8 +92,7 @@ namespace JigsawPrototype.Features.Home.Presentation
         {
             if (_view == null || _lifetimeCts == null) return;
 
-            var requestVersion = BeginSelectionRequest();
-            var selectionToken = _selectionCts.Token;
+            var selectionToken = BeginSelectionRequest();
             var selectedItem = ResolveSelectedPuzzleItem(puzzleId);
             if (selectedItem == null)
             {
@@ -100,50 +100,53 @@ namespace JigsawPrototype.Features.Home.Presentation
                 return;
             }
 
-            var selectedPuzzleId = selectedItem.Id;
-            var selectedPreviewPath = selectedItem.PreviewPath;
-
-            _view.SetGridInteractable(false);
-
-            Texture2D texture = null;
-            var loadError = "";
             try
             {
-                var sprite = await _preview.GetPreviewAsync(selectedItem.PreviewPath, selectionToken);
-                _view.SetTilePreview(selectedPuzzleId, sprite);
-                texture = sprite != null ? sprite.texture : null;
+                using (await _selectionLock.LockAsync(selectionToken))
+                {
+                    _view?.SetGridInteractable(false);
+
+                    var (texture, loadError) = await TryLoadSelectedPreviewAsync(selectedItem, selectionToken);
+                    selectionToken.ThrowIfCancellationRequested();
+
+                    var args = new PuzzleStartArgs(
+                        selectedItem.Id,
+                        selectedItem.PreviewPath,
+                        texture ?? PreviewPlaceholderTexture.GetOrCreate(),
+                        initialLoadError: loadError);
+
+                    await _puzzleStartPresenter.OpenDialogAsync(args);
+                }
             }
             catch (OperationCanceledException)
             {
-                return;
+                // Latest-wins: selection was superseded by newer request.
+            }
+            finally
+            {
+                if (!selectionToken.IsCancellationRequested)
+                {
+                    _view?.SetGridInteractable(true);
+                }
+            }
+        }
+
+        private async UniTask<(Texture2D texture, string loadError)> TryLoadSelectedPreviewAsync(PuzzleCatalogItem selectedItem, CancellationToken ct)
+        {
+            try
+            {
+                var sprite = await _preview.GetPreviewAsync(selectedItem.PreviewPath, ct);
+                _view?.SetTilePreview(selectedItem.Id, sprite);
+                return (sprite != null ? sprite.texture : null, "");
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception e)
             {
                 Debug.LogException(e);
-                loadError = "Failed to load preview.";
-            }
-
-            if (!IsSelectionCurrent(requestVersion, selectionToken))
-            {
-                return;
-            }
-
-            try
-            {
-                var args = new PuzzleStartArgs(
-                    selectedPuzzleId,
-                    selectedPreviewPath,
-                    texture ?? PreviewPlaceholderTexture.GetOrCreate(),
-                    initialLoadError: loadError);
-
-                await _puzzleStartPresenter.OpenDialogAsync(args);
-            }
-            finally
-            {
-                if (IsSelectionCurrent(requestVersion, selectionToken))
-                {
-                    _view?.SetGridInteractable(true);
-                }
+                return (null, "Failed to load preview.");
             }
         }
 
@@ -157,21 +160,6 @@ namespace JigsawPrototype.Features.Home.Presentation
             if (!string.IsNullOrWhiteSpace(puzzleId) && _itemsById.TryGetValue(puzzleId, out var selected))
             {
                 return selected;
-            }
-
-            if (!string.IsNullOrWhiteSpace(_catalog?.DefaultPuzzleId) &&
-                _itemsById.TryGetValue(_catalog.DefaultPuzzleId, out var defaultItem))
-            {
-                return defaultItem;
-            }
-
-            for (var i = 0; i < _items.Count; i++)
-            {
-                var item = _items[i];
-                if (item != null && !string.IsNullOrWhiteSpace(item.Id))
-                {
-                    return item;
-                }
             }
 
             return null;
@@ -189,25 +177,20 @@ namespace JigsawPrototype.Features.Home.Presentation
             }
         }
 
-        private int BeginSelectionRequest()
+        private CancellationToken BeginSelectionRequest()
         {
             CancelSelectionRequest();
             _selectionCts = CancellationTokenSource.CreateLinkedTokenSource(_lifetimeCts.Token);
-            _selectionVersion++;
-            return _selectionVersion;
-        }
-
-        private bool IsSelectionCurrent(int version, CancellationToken token)
-        {
-            return _selectionCts != null && !token.IsCancellationRequested && _selectionVersion == version;
+            return _selectionCts.Token;
         }
 
         private void CancelSelectionRequest()
         {
-            if (_selectionCts == null) return;
-            _selectionCts.Cancel();
-            _selectionCts.Dispose();
+            var cts = _selectionCts;
             _selectionCts = null;
+            if (cts == null) return;
+            cts.Cancel();
+            cts.Dispose();
         }
 
         private void CancelAsync()

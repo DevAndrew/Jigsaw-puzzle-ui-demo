@@ -8,26 +8,18 @@ namespace JigsawPrototype.Features.Puzzle.Preview
 {
     public sealed class LocalFilePreviewService : IPuzzlePreviewService
     {
-        public sealed class Config
-        {
-            public string DefaultPreviewPath;
-        }
-
-        private readonly string _defaultPreviewPath;
         private readonly Dictionary<string, Sprite> _cache = new(StringComparer.Ordinal);
 
-        public LocalFilePreviewService(Config config)
+        public LocalFilePreviewService()
         {
-            _defaultPreviewPath = config?.DefaultPreviewPath ?? "";
         }
 
         public async UniTask<Sprite> GetPreviewAsync(string previewPath, CancellationToken ct)
         {
-            var assetPath = string.IsNullOrWhiteSpace(previewPath) ? _defaultPreviewPath : previewPath;
-            if (string.IsNullOrWhiteSpace(assetPath))
+            if (string.IsNullOrWhiteSpace(previewPath))
                 return null;
 
-            var resourcesPath = NormalizeResourcesPath(assetPath);
+            var resourcesPath = NormalizeResourcesPath(previewPath);
             if (string.IsNullOrWhiteSpace(resourcesPath))
                 return null;
 

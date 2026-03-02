@@ -83,20 +83,7 @@ namespace JigsawPrototype.App
                 new PuzzleCatalogItem("demo_12", "PuzzleImages/demo_img_12", 11),
             };
 
-            var defaultPreviewPath = "";
-            for (var i = 0; i < catalogItems.Count; i++)
-            {
-                if (catalogItems[i].Id == defaultPuzzleId)
-                {
-                    defaultPreviewPath = catalogItems[i].PreviewPath;
-                    break;
-                }
-            }
-
-            _preview = new LocalFilePreviewService(new LocalFilePreviewService.Config
-            {
-                DefaultPreviewPath = defaultPreviewPath
-            });
+            _preview = new LocalFilePreviewService();
             _catalog = new StaticPuzzleCatalogService(catalogItems, defaultPuzzleId);
 
             // Views (prefab-authored, instantiated under UiRootShell)
@@ -140,7 +127,7 @@ namespace JigsawPrototype.App
 
             // Presenters
             _gameplayPresenter = new PuzzleGameplayPresenter(_screens, _dialogHost);
-            _puzzleStartPresenter = new PuzzleStartPresenter(_currency, _ads, _preview, _screens, puzzleStartDialogView, _gameplayPresenter, _dialogHost, defaultPuzzleId, defaultPreviewPath);
+            _puzzleStartPresenter = new PuzzleStartPresenter(_currency, _ads, _preview, _screens, puzzleStartDialogView, _gameplayPresenter, _dialogHost);
             _homePresenter = new HomePresenter(_currency, _catalog, _preview, _puzzleStartPresenter);
             _storePresenter = new StorePresenter(_currency, _screens, _puzzleStartPresenter);
 

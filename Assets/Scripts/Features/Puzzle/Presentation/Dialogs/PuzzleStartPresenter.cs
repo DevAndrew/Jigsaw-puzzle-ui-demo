@@ -20,14 +20,12 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
         private readonly PuzzleStartDialogView _view;
         private readonly PuzzleGameplayPresenter _gameplayPresenter;
         private readonly DialogHost _dialogHost;
-        private readonly string _defaultPuzzleId;
-        private readonly string _defaultPreviewPath;
 
         private PiecesPreset _piecesPreset;
         private bool _busy;
         private CancellationTokenSource _cts;
-        private string _selectedPuzzleId;
-        private string _selectedPreviewPath;
+        private string _selectedPuzzleId = "";
+        private string _selectedPreviewPath = "";
         private string _prefetchedPuzzleId;
         private Texture2D _prefetchedPreview;
         private string _pendingLoadError;
@@ -39,9 +37,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             ScreenStack screens,
             PuzzleStartDialogView view,
             PuzzleGameplayPresenter gameplayPresenter,
-            DialogHost dialogHost,
-            string defaultPuzzleId,
-            string defaultPreviewPath)
+            DialogHost dialogHost)
         {
             _currency = currency;
             _ads = ads;
@@ -50,10 +46,6 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             _view = view;
             _gameplayPresenter = gameplayPresenter;
             _dialogHost = dialogHost;
-            _defaultPuzzleId = defaultPuzzleId ?? "";
-            _defaultPreviewPath = defaultPreviewPath ?? "";
-            _selectedPuzzleId = _defaultPuzzleId;
-            _selectedPreviewPath = _defaultPreviewPath;
         }
 
         public void Bind(PuzzleStartDialogView dialog)
@@ -102,6 +94,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
 
         public UniTask OpenDialogAsync(PuzzleStartArgs args)
         {
+            if (args == null) throw new ArgumentNullException(nameof(args));
             ApplyArgs(args);
 
             // Set preview before show animation starts, so old image never flashes.
@@ -307,18 +300,8 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
 
         private void ApplyArgs(PuzzleStartArgs args)
         {
-            if (args == null)
-            {
-                _selectedPuzzleId = _defaultPuzzleId;
-                _selectedPreviewPath = _defaultPreviewPath;
-                _prefetchedPuzzleId = _selectedPuzzleId;
-                _prefetchedPreview = null;
-                _pendingLoadError = "";
-                return;
-            }
-
-            _selectedPuzzleId = string.IsNullOrWhiteSpace(args.PuzzleId) ? _defaultPuzzleId : args.PuzzleId;
-            _selectedPreviewPath = string.IsNullOrWhiteSpace(args.PreviewPath) ? _defaultPreviewPath : args.PreviewPath;
+            _selectedPuzzleId = args.PuzzleId;
+            _selectedPreviewPath = args.PreviewPath;
             _prefetchedPuzzleId = _selectedPuzzleId;
             _prefetchedPreview = args.PrefetchedPreview;
             _pendingLoadError = args.InitialLoadError ?? "";
