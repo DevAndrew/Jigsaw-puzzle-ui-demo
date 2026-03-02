@@ -127,7 +127,9 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             gameObject.SetActive(true);
             transform.SetAsLastSibling();
             var animationToken = RenewAnimationToken();
-            using var linked = CreateLinkedToken(animationToken, cancellationToken);
+            using var linked = cancellationToken.CanBeCanceled
+                ? CancellationTokenSource.CreateLinkedTokenSource(animationToken, cancellationToken)
+                : null;
             var token = linked?.Token ?? animationToken;
 
             if (_animator != null)
@@ -158,7 +160,9 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             }
 
             var animationToken = RenewAnimationToken();
-            using var linked = CreateLinkedToken(animationToken, cancellationToken);
+            using var linked = cancellationToken.CanBeCanceled
+                ? CancellationTokenSource.CreateLinkedTokenSource(animationToken, cancellationToken)
+                : null;
             var token = linked?.Token ?? animationToken;
             if (_animator != null)
             {
@@ -288,14 +292,6 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             _animationCts?.Dispose();
             _animationCts = new CancellationTokenSource();
             return _animationCts.Token;
-        }
-
-        private static CancellationTokenSource CreateLinkedToken(CancellationToken a, CancellationToken b)
-        {
-            if (!a.CanBeCanceled && !b.CanBeCanceled) return null;
-            if (!a.CanBeCanceled) return CancellationTokenSource.CreateLinkedTokenSource(b);
-            if (!b.CanBeCanceled) return CancellationTokenSource.CreateLinkedTokenSource(a);
-            return CancellationTokenSource.CreateLinkedTokenSource(a, b);
         }
     }
 }
