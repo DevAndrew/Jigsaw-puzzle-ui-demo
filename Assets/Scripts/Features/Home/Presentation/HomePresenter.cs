@@ -28,7 +28,7 @@ namespace JigsawPrototype.Features.Home.Presentation
             ICurrencyService currency,
             IPuzzleCatalogService catalog,
             IPuzzlePreviewService preview,
-            PuzzleStartPresenter puzzleStartPresenter)
+            PuzzleStartPresenter puzzleStartPresenter) // TODO: cross-feature connection (Home directly depends on PuzzleStartPresenter) 
         {
             _currency = currency;
             _catalog = catalog;

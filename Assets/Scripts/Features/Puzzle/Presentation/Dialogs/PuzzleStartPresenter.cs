@@ -175,7 +175,6 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
                 return;
             }
 
-            // Variant B: silently go to store.
             GoStoreAsync().Forget();
         }
 
@@ -266,6 +265,8 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             _busy = true;
             await _dialogHost.HideAllAsync();
             _gameplayPresenter.SetPieces((int)_piecesPreset);
+            
+            // TODO: can be replaced with coordinator
             _screens.Replace(ScreenId.PuzzleGameplay);
         }
 

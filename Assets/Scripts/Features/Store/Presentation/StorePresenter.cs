@@ -14,6 +14,7 @@ namespace JigsawPrototype.Features.Store.Presentation
 
         private StoreScreenView _view;
 
+        //TODO: Circular dependency: StorePresenter knows about PuzzleStartPresenter
         public StorePresenter(ICurrencyService currency, ScreenStack screens, PuzzleStartPresenter puzzleStartPresenter)
         {
             _currency = currency;
