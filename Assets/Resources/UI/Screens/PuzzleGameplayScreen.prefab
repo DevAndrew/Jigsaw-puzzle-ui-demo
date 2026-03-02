@@ -9,9 +9,9 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 683623254340354757}
-  - component: {fileID: 3046968885163538123}
+  - component: {fileID: 3365397018125408095}
   m_Layer: 5
-  m_Name: PuzzleStartedScreen
+  m_Name: PuzzleGameplayScreen
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -38,7 +38,7 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &3046968885163538123
+--- !u!114 &3365397018125408095
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -47,7 +47,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 4573631864466095280}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 81acfe7bac8034bb186b9b990808db97, type: 3}
+  m_Script: {fileID: 11500000, guid: 4c977ab2347f54b19a7bc01bf9da1b06, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _titleText: {fileID: 7232047513439116194}
