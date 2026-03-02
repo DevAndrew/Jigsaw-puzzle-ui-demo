@@ -1,15 +1,18 @@
 using JigsawPrototype.Core.UI;
+using Cysharp.Threading.Tasks;
 
 namespace JigsawPrototype.Features.Puzzle.Presentation.Screens
 {
     public sealed class PuzzleStartedPresenter
     {
         private readonly ScreenStack _screens;
+        private readonly DialogHost _dialogHost;
         private PuzzleStartedScreenView _view;
 
-        public PuzzleStartedPresenter(ScreenStack screens)
+        public PuzzleStartedPresenter(ScreenStack screens, DialogHost dialogHost)
         {
             _screens = screens;
+            _dialogHost = dialogHost;
         }
 
         public void Bind(PuzzleStartedScreenView view)
@@ -32,6 +35,12 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Screens
 
         private void OnBack()
         {
+            ReturnHomeAsync().Forget();
+        }
+
+        private async UniTask ReturnHomeAsync()
+        {
+            await _dialogHost.HideAllAsync();
             _screens.Replace(ScreenId.Home);
         }
     }

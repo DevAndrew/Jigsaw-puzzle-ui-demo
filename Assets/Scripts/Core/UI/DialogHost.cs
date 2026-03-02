@@ -202,6 +202,44 @@ namespace JigsawPrototype.Core.UI
             }
         }
 
+        public void HideAll() => HideAllAsync().Forget();
+
+        public async UniTask HideAllAsync()
+        {
+            if (_stack.Count == 0)
+                return;
+
+            var token = RenewTransitionToken();
+            try
+            {
+                using (await _transitionLock.LockAsync(token))
+                {
+                    try
+                    {
+                        for (var i = _stack.Count - 1; i >= 0; i--)
+                        {
+                            var entry = _stack[i];
+                            if (entry.View != null && entry.View.IsVisible)
+                                await entry.View.HideAsync(token);
+
+                            token.ThrowIfCancellationRequested();
+
+                            _stack.RemoveAt(i);
+                        }
+                    }
+                    finally
+                    {
+                        ApplyInteractable();
+                        UpdateModalBackground();
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                // Latest-wins: ignore canceled transition.
+            }
+        }
+
         private int IndexOf(IUIView dialog)
         {
             for (var i = 0; i < _stack.Count; i++)

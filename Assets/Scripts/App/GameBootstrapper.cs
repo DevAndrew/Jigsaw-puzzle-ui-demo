@@ -139,7 +139,7 @@ namespace JigsawPrototype.App
             }
 
             // Presenters
-            _startedPresenter = new PuzzleStartedPresenter(_screens);
+            _startedPresenter = new PuzzleStartedPresenter(_screens, _dialogHost);
             _puzzleStartPresenter = new PuzzleStartPresenter(_currency, _ads, _preview, _screens, puzzleStartDialogView, _startedPresenter, _dialogHost, defaultPuzzleId, defaultPreviewPath);
             _homePresenter = new HomePresenter(_currency, _catalog, _preview, _puzzleStartPresenter);
             _storePresenter = new StorePresenter(_currency, _screens, _puzzleStartPresenter);

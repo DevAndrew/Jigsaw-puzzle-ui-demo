@@ -263,7 +263,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
         private async UniTask GoStartedAsync()
         {
             _busy = true;
-            await _dialogHost.HideAsync(_view);
+            await _dialogHost.HideAllAsync();
             _startedPresenter.SetPieces((int)_piecesPreset);
             _screens.Replace(ScreenId.PuzzleStarted);
         }
