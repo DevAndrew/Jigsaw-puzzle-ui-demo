@@ -54,10 +54,10 @@ namespace JigsawPrototype.Features.Home.Presentation
 
         public void Unbind()
         {
+            _currency.BalanceChanged -= OnBalanceChanged;
             if (_view == null) return;
             CancelAsync();
             _view.PuzzleSelected -= OnPuzzleSelected;
-            _currency.BalanceChanged -= OnBalanceChanged;
             _view = null;
         }
 
