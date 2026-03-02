@@ -208,7 +208,8 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             BeginBusy("Loading preview...");
             try
             {
-                var tex = await _preview.GetPreviewAsync(_selectedPreviewPath, _cts.Token);
+                var sprite = await _preview.GetPreviewAsync(_selectedPreviewPath, _cts.Token);
+                var tex = sprite != null ? sprite.texture : PreviewPlaceholderTexture.GetOrCreate();
                 _prefetchedPuzzleId = _selectedPuzzleId;
                 _prefetchedPreview = tex;
                 _view.SetPreview(tex);
