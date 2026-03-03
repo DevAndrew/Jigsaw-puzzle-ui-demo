@@ -15,20 +15,15 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
     {
         private readonly ICurrencyService _currency;
         private readonly IAdsService _ads;
-        private readonly IPuzzlePreviewService _preview;
+        private readonly PuzzleStartPreviewController _previewController;
         private readonly ScreenStack _screens;
         private readonly PuzzleStartDialogView _view;
         private readonly PuzzleGameplayPresenter _gameplayPresenter;
         private readonly DialogHost _dialogHost;
 
         private PiecesPreset _piecesPreset;
-        private bool _busy;
-        private CancellationTokenSource _cts;
-        private string _selectedPuzzleId = "";
-        private string _selectedPreviewPath = "";
-        private string _prefetchedPuzzleId;
-        private Texture2D _prefetchedPreview;
-        private string _pendingLoadError;
+        private bool _isActionBusy;
+        private CancellationTokenSource _actionCts;
 
         public PuzzleStartPresenter(
             ICurrencyService currency,
@@ -41,38 +36,36 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
         {
             _currency = currency;
             _ads = ads;
-            _preview = preview;
+            _previewController = new PuzzleStartPreviewController(preview);
             _screens = screens;
             _view = view;
             _gameplayPresenter = gameplayPresenter;
             _dialogHost = dialogHost;
         }
 
-        public void Bind(PuzzleStartDialogView dialog)
+        public void Bind()
         {
             if (_piecesPreset == PiecesPreset.Unknown)
             {
-                _piecesPreset = dialog.InitialPiecesPreset;
+                _piecesPreset = _view.InitialPiecesPreset;
             }
 
-            dialog.SetCoinsCost(AppConstants.Economy.PuzzleStartCoinsCost);
-            dialog.SetPiecesSelected(_piecesPreset);
-            dialog.SetCoins(_currency.Balance);
-            dialog.SetStatus("");
-            dialog.SetError("");
+            _view.SetCoinsCost(AppConstants.Economy.PuzzleStartCoinsCost);
+            _view.SetPiecesSelected(_piecesPreset);
+            _view.SetCoins(_currency.Balance);
+            _view.SetStatus("");
+            _view.SetError("");
 
-            dialog.CloseRequested += OnClose;
-            dialog.PiecesSelected += OnPiecesSelected;
-            dialog.StartFreeRequested += OnStartFree;
-            dialog.StartCoinsRequested += OnStartCoins;
-            dialog.StartAdRequested += OnStartAd;
-            dialog.Shown += OnDialogShown;
-            dialog.Hidden += OnDialogHidden;
-
+            _view.CloseRequested += OnClose;
+            _view.PiecesSelected += OnPiecesSelected;
+            _view.StartFreeRequested += OnStartFree;
+            _view.StartCoinsRequested += OnStartCoins;
+            _view.StartAdRequested += OnStartAd;
+            _view.Shown += OnDialogShown;
+            _view.Hidden += OnDialogHidden;
             _currency.BalanceChanged += OnBalanceChanged;
-            
-            // If view is already visible (e.g. authored active), trigger the "shown" behavior immediately.
-            if (dialog.IsVisible)
+
+            if (_view.IsVisible)
             {
                 OnDialogShown();
             }
@@ -80,7 +73,7 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
 
         public void Unbind()
         {
-            CancelAsync();
+            CancelAll();
             _currency.BalanceChanged -= OnBalanceChanged;
 
             _view.CloseRequested -= OnClose;
@@ -97,71 +90,60 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             if (args == null) throw new ArgumentNullException(nameof(args));
             ApplyArgs(args);
 
-            // Set preview before show animation starts, so old image never flashes.
-            if (_prefetchedPreview != null && _prefetchedPuzzleId == _selectedPuzzleId)
-            {
-                _view.SetPreview(_prefetchedPreview);
-            }
+            _view.SetInteractable(true);
+            _view.SetStatus("");
+            _view.SetError("");
+
+            if (_previewController.TryGetCachedForSelected(out var cachedPreview))
+                _view.SetPreview(cachedPreview);
             else
-            {
                 _view.SetPreviewLoading();
-            }
 
             return _dialogHost.PushAsync(_view, modal: true);
         }
 
         public UniTask ReopenLastDialogAsync()
         {
-            var args = new PuzzleStartArgs(
-                _selectedPuzzleId,
-                _selectedPreviewPath,
-                _prefetchedPreview,
-                _piecesPreset,
-                _pendingLoadError);
-
-            return OpenDialogAsync(args);
+            return OpenDialogAsync(_previewController.CreateArgs(_piecesPreset));
         }
 
         private void OnDialogShown()
         {
-            if (!string.IsNullOrWhiteSpace(_prefetchedPuzzleId) &&
-                _prefetchedPreview != null &&
-                _prefetchedPuzzleId == _selectedPuzzleId)
+            if (_previewController.TryConsumeCachedForSelected(out var cachedPreview, out var pendingError))
             {
-                _view.SetPreview(_prefetchedPreview);
+                _view.SetPreview(cachedPreview);
                 _view.SetStatus("");
-                _view.SetError(_pendingLoadError);
-                _pendingLoadError = "";
+                _view.SetError(pendingError);
                 return;
             }
 
-            // Fallback: opening the dialog triggers preview load (and cancels any previous one).
-            StartPreviewLoadAsync().Forget();
+            LoadPreviewAsync().Forget();
         }
 
         private void OnDialogHidden()
         {
-            // Rule: hiding the dialog cancels any pending async operations (preview/ad).
-            CancelAsync();
-            _busy = false;
+            CancelAll();
+            _isActionBusy = false;
         }
 
         private void OnPiecesSelected(PiecesPreset preset)
         {
-            if (_busy) return;
+            if (_isActionBusy) return;
             _piecesPreset = preset;
             _view.SetPiecesSelected(preset);
         }
 
         private void OnStartFree()
         {
-            if (_busy) return;
+            if (_isActionBusy) return;
+            CancelPreview();
             GoGameplayAsync().Forget();
         }
 
         private void OnStartCoins()
         {
-            if (_busy) return;
+            if (_isActionBusy) return;
+            CancelPreview();
             if (_currency.TrySpend(AppConstants.Economy.PuzzleStartCoinsCost))
             {
                 GoGameplayAsync().Forget();
@@ -173,75 +155,58 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
 
         private void OnStartAd()
         {
-            if (_busy) return;
+            if (_isActionBusy) return;
+            CancelPreview();
             RunAdAsync().Forget();
         }
 
         private void OnClose()
         {
-            if (_busy) return;
+            if (_isActionBusy) return;
             _dialogHost.Hide(_view);
         }
 
-        private void OnBalanceChanged(int coins)
-        {
-            _view.SetCoins(coins);
-        }
-
-        private async UniTask StartPreviewLoadAsync()
-        {
-            CancelAsync();
-            _cts = new CancellationTokenSource();
-            await LoadPreviewAsync();
-        }
+        private void OnBalanceChanged(int coins) => _view.SetCoins(coins);
 
         private async UniTask LoadPreviewAsync()
         {
-            BeginBusy("Loading preview...");
+            CancelPreview();
+
+            _view.SetStatus("Loading preview...");
+            _view.SetError("");
             try
             {
-                var sprite = await _preview.GetPreviewAsync(_selectedPreviewPath, _cts.Token);
-                var tex = sprite != null ? sprite.texture : PreviewPlaceholderTexture.GetOrCreate();
-                _prefetchedPuzzleId = _selectedPuzzleId;
-                _prefetchedPreview = tex;
-                _view.SetPreview(tex);
-                _view.SetStatus("");
-                _view.SetError("");
-                _pendingLoadError = "";
+                var result = await _previewController.LoadSelectedAsync();
+                if (!_isActionBusy && _view.IsVisible)
+                {
+                    _view.SetPreview(result.Texture);
+                    _view.SetError(result.Error);
+                }
             }
-            catch (OperationCanceledException)
-            {
-            }
-            catch (Exception e)
-            {
-                Debug.LogException(e);
-                _view.SetError("Failed to load preview.");
-            }
+            catch (OperationCanceledException) { }
             finally
             {
-                EndBusy();
+                if (!_isActionBusy && _view.IsVisible)
+                    _view.SetStatus("");
             }
         }
 
         private async UniTask RunAdAsync()
         {
-            EnsureCts();
+            CancelAction();
+            _actionCts = new CancellationTokenSource();
+            var token = _actionCts.Token;
+
             BeginBusy("Loading ad...");
             try
             {
-                var result = await _ads.ShowRewardedAsync(AdPlacements.PuzzleStart, _cts.Token);
+                var result = await _ads.ShowRewardedAsync(AdPlacements.PuzzleStart, token);
                 if (result == AdResult.Success)
-                {
-                    await GoGameplayAsync();
-                }
+                    await GoGameplayCoreAsync();
                 else
-                {
                     _view.SetError("Ad failed. Please retry.");
-                }
             }
-            catch (OperationCanceledException)
-            {
-            }
+            catch (OperationCanceledException) { }
             catch (Exception e)
             {
                 Debug.LogException(e);
@@ -250,29 +215,38 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
             finally
             {
                 EndBusy();
+                CancelAction();
             }
         }
 
         private async UniTask GoGameplayAsync()
         {
-            _busy = true;
-            await _dialogHost.HideAllAsync();
-            _gameplayPresenter.SetPieces((int)_piecesPreset);
-            
-            // TODO: can be replaced with coordinator
-            _screens.Replace(ScreenId.PuzzleGameplay);
+            BeginBusy();
+            try { await GoGameplayCoreAsync(); }
+            finally { EndBusy(); }
         }
 
         private async UniTask GoStoreAsync()
         {
-            _busy = true;
-            await _dialogHost.HideAsync(_view);
-            _screens.Push(ScreenId.Store);
+            BeginBusy();
+            try
+            {
+                await _dialogHost.HideAsync(_view);
+                _screens.Push(ScreenId.Store);
+            }
+            finally { EndBusy(); }
         }
 
-        private void BeginBusy(string status)
+        private async UniTask GoGameplayCoreAsync()
         {
-            _busy = true;
+            await _dialogHost.HideAllAsync();
+            _gameplayPresenter.SetPieces((int)_piecesPreset);
+            _screens.Replace(ScreenId.PuzzleGameplay);
+        }
+
+        private void BeginBusy(string status = "")
+        {
+            _isActionBusy = true;
             _view.SetInteractable(false);
             _view.SetStatus(status);
             _view.SetError("");
@@ -280,31 +254,33 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
 
         private void EndBusy()
         {
-            _busy = false;
+            _isActionBusy = false;
             _view.SetInteractable(true);
             _view.SetStatus("");
         }
 
-        private void CancelAsync()
+        private void CancelPreview()
         {
-            if (_cts == null) return;
-            _cts.Cancel();
-            _cts.Dispose();
-            _cts = null;
+            _previewController.CancelLoad();
         }
 
-        private void EnsureCts()
+        private void CancelAction()
         {
-            _cts ??= new CancellationTokenSource();
+            if (_actionCts == null) return;
+            _actionCts.Cancel();
+            _actionCts.Dispose();
+            _actionCts = null;
+        }
+
+        private void CancelAll()
+        {
+            CancelPreview();
+            CancelAction();
         }
 
         private void ApplyArgs(PuzzleStartArgs args)
         {
-            _selectedPuzzleId = args.PuzzleId;
-            _selectedPreviewPath = args.PreviewPath;
-            _prefetchedPuzzleId = _selectedPuzzleId;
-            _prefetchedPreview = args.PrefetchedPreview;
-            _pendingLoadError = args.InitialLoadError ?? "";
+            _previewController.SetSelection(args);
 
             if (args.InitialPiecesPreset.HasValue && args.InitialPiecesPreset.Value != PiecesPreset.Unknown)
             {
@@ -314,4 +290,3 @@ namespace JigsawPrototype.Features.Puzzle.Presentation.Dialogs
         }
     }
 }
-

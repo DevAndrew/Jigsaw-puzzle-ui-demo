@@ -133,7 +133,7 @@ namespace JigsawPrototype.App
 
             // Bind views
             _homePresenter.Bind(homeView);
-            _puzzleStartPresenter.Bind(puzzleStartDialogView);
+            _puzzleStartPresenter.Bind();
             _storePresenter.Bind(storeView);
             _gameplayPresenter.Bind(gameplayView);
 
